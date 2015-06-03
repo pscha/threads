@@ -9,6 +9,11 @@
 #include "ult.h"
 #include "tcb.h"
 
+
+struct timeval tv_str; // for read datatypes
+static fd_set fds;
+
+
 /*
  This function only exists to tell the process to use an empty stack for the thread
  */
@@ -80,7 +85,28 @@ int ult_waitpid(int tid, int *status) {
  Systemrufe blockieren koennen.
  */
 int ult_read(int fd, void *buf, int count) {
- return 0;
+	
+  int data; //returns != 0 if data is available
+  ssize_t nread;
+
+  if (!FD_ISSET(fd, &fds)) {
+    FD_SET(fd, &fds);       //Creating fd_set for select()
+  }
+
+  //set time select() is going to wait
+  tv_str.tv_sec = 0;
+  tv_str.tv_usec = 200;
+
+  //is data available?
+  data = select(fd + 1, &fds, NULL, NULL, &tv_str);
+  
+  if (data) {
+    nread = read(fd, buf, count);   //data is available - read it!
+    FD_CLR(fd, &fds);
+    return nread;
+  }
+
+  return -1;
 }
 
 
