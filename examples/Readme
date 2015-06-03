@@ -1,0 +1,13 @@
+setjmp.c (setjmp)
+ - Beispiel für setjmp und longjmp
+ - Im Beispiel wird zu einem Zustand zurückgesprungen (Marker 1)
+
+stack.c
+ - Beispiel für anderen Speicher für den Stack im Signalhandler
+ - Vom Stack wird der Stackpointer und der Basepointer ausgegeben
+ - Vergleicht die Adressen!!!
+
+threadexample.c
+ - Einfaches Beispiel für userlevel threads
+ - Über Signalhandler und sigaction (siehe stack.c) wird ein anderer Stack für den neuen Thread verwendet
+ - Mittels setjmp/longjmp wird zwischen den Threads gewechselt
