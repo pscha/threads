@@ -23,6 +23,7 @@ void threadA()
 	{
 		ult_read(fd,c,256); 
 		copyed_bytes = copyed_bytes + 256;			
+		ult_yield();
 	}
 	ult_exit(0);
 }
@@ -44,6 +45,7 @@ void threadB()
 			printf("time = %f\nbytes = %li\n",difftime(time(NULL) ,start_time),copyed_bytes);
 		}
 		free(in);
+		ult_yield();
 	}
 	ult_exit(0);
 }
