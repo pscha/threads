@@ -13,7 +13,8 @@
  * wird der kontext geladen geht es hinter diesem Befehl weiter (wegen IP) 
  */
 int tcb_getcontext(tcb *t){
-	
+	//  int long ip;
+	//  __asm__ __volatile__ ( "mov %%eip, %%eax":"=a" (ip)); // speichere ip in ip
 	return 0;
 }
 
