@@ -6,6 +6,8 @@
 struct tcb_str;	//forward declaration
 
 typedef struct tcb_str {
+	long tcb_ip ; 	// instruktion pointer
+					// register speichern
 	//fill this struct with statusinformations
 	stack_t	stack;	//stack for local vars
 	/* rest */
