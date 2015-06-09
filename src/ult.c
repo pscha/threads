@@ -1,5 +1,3 @@
-#define DEBUG 0
-
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,10 +7,12 @@
 #include "ult.h"
 #include "tcb.h"
 
+#define MAX_TCB 10
+#define DEBUG 0
 
 struct timeval tv_str; // for read datatypes
 static fd_set fds;
-
+tcb* tcb_list[MAX_TCB];
 
 /*
  This function only exists to tell the process to use an empty stack for the thread
@@ -118,4 +118,16 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
+	int i;
+	ult_spawn(f);
+	while(1){
+		for(i = 0; i < MAX_TCB; i++){
+			/*
+			 * set context to tcb and if tcb controlled thread yields get the
+			 * context
+			 */
+			tcb_setcontext(tcb_list[i]);
+			tcb_getcontext(tcb_list[i]);
+		}
+	}
 }
