@@ -1,20 +1,50 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 #include <time.h>
 #include "ult.h"
 
 int end_copying;
-long copyed_bytes;
+long copyed_bytes = 0;
 time_t start_time;
 
 void threadA()
 {
+	char c[256];
+	FILE* rnd;
+	int fd;	
+	
+	start_time = time(NULL);
+	rnd = fopen("/dev/random","r");
+	fd = fileno(rnd);
+
+	while(!end_copying)
+	{
+		ult_read(fd,c,256); 
+		copyed_bytes = copyed_bytes + 256;			
+	}
 	ult_exit(0);
 }
 
 void threadB()
 {
+	char* in;
+	while(!end_copying)
+	{
+		printf("> ");
+		getline(&in,0,NULL);
+			
+		if(strncmp("exit",in,4))
+		{
+			end_copying = 1;
+		}
+		else if(strncmp("status",in,6))
+		{
+			printf("time = %f\nbytes = %li\n",difftime(time(NULL) ,start_time),copyed_bytes);
+		}
+		free(in);
+	}
 	ult_exit(0);
 }
 
@@ -37,7 +67,7 @@ void myInit()
     ult_exit(0);
 }
 
-int  main()
+int main()
 {
     printf("starting myInit\n"); fflush(stdout);
     ult_init(myInit);
