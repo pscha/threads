@@ -6,6 +6,15 @@
 #include "tcb.h"
 
 
+/**
+ * diese funktion printet uns mal die Pointer von dem verwendeten Stack
+ * reines Debugging
+ */
+int tcb_contextprint(tcb *t){
+	
+
+	return 0;
+}
 
 
 /**

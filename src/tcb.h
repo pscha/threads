@@ -15,6 +15,13 @@ typedef struct tcb_str {
 } tcb;
 
 /**
+ * diese funktion printet uns mal die Pointer von dem verwendeten Stack
+ * reines Debugging
+ */
+extern int tcb_contextprint(tcb *t);
+
+
+/**
  * Speichert den aktuellen Kontext in der übergebenen tcb-strukt
  * wird der kontext geladen geht es hinter diesem Befehl weiter (wegen IP) 
  */
