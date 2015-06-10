@@ -122,6 +122,9 @@ int ult_read(int fd, void *buf, int count) {
 void ult_init(ult_func f) {
 	int i;
 	ult_spawn(f);
+	for(i = 0; i < MAX_TCB; i++){
+		tcb_list[i] = malloc(sizeof(tcb));
+	}
 	while(1){
 		for(i = 0; i < MAX_TCB; i++){
 			/*
