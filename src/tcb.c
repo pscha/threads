@@ -13,10 +13,8 @@
 int tcb_contextprint(tcb *t){
 	long stackp = 0;
 	long basep = 0;
-
 	__asm__ __volatile__ ( "mov %%ebp, %%eax":"=a" (basep));
 	__asm__ __volatile__ ( "mov %%esp, %%eax":"=a" (stackp));
-  
 	printf("SignalhandlerAdv Stackpointer : %lu Basepointer: %lu\n",stackp,basep);
 	return 0;
 }
