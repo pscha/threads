@@ -8,5 +8,8 @@ default:
 clean:
 	rm -f *.o test_ult
 
+test: default clean
+	
+
 pack:
 	tar cvf ../lab-4.tar ../src
