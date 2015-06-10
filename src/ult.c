@@ -146,7 +146,6 @@ void ult_init(ult_func f) {
 		tcb_list[i] = malloc(sizeof(tcb));
 		tcb_list[i]->Thread_ID= i; // gleich ID zuweisung
 	}
-}	
 	
 	
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_list[0] hat also Valide werrte
@@ -175,3 +174,4 @@ void ult_init(ult_func f) {
 	longjmp(tcb_list[0]->env,1); 
 	// hier kommen wir nur hin, wenn wir bestimmtes ausführen.
 	
+}	
