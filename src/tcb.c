@@ -13,11 +13,9 @@
  * wird der kontext geladen geht es hinter diesem Befehl weiter (wegen IP) 
  */
 int tcb_getcontext(tcb *t){
-	__asm__ __volatile__ ( "mov %%esp, %%eax":"=a" (t.stack.ss_sp)); //  Stackpointer gespeichert
-	__asm__ __volatile__ ( "mov %%ebp, %%eax":"=a" (t.tcb_bp)); //  Stackpointer gespeichert
-	
-	
-	__asm__ __volatile__ ( "mov %%eip, %%eax":"=a" (t.tcb_ip)); // speichere ip in ip muss letzte aktion sein.
+	if (setjmp(t->env)){ // speichert die Umgebungsvar in den jmp_buf des zugewiesenen TCB 
+		printf("Thread %d wird weiter bearbeitet",t->Thread_ID); // wenn thread weitergeht wird was ausgegeben.
+	}
  	// hier gehts dann weiter, wenn der TCB wieder geladen wird.
  	return 0;
 }
@@ -27,8 +25,9 @@ int tcb_getcontext(tcb *t){
  * setzt den aktuellen kontext aus der übergebenen Strucktur. Befehle nach diesem werden nicht ausgelöst, da 
  * der IP neu gesetzt wird
  */
-int tcb_setcontext(const tcb *t){
-	
+int tcb_setcontext(tcb *t){
+	longjmp(t->env,1); // ?? ob das klappt?   
+	// nach dem Longjmp werden ja alle Pointer und Register geladen und es geht innerhalb des Threads weiter
 	
 	
 	return 0;
@@ -47,6 +46,7 @@ int tcb_swapcontext(tcb *ourTcb, tcb *newTcb){
  */
 int tcb_makecontext(tcb *t, void *func(), int argc, ...){
 	// malloc der stacksize zum erzeugen des Stacks
+	
 	
 	return 0;
 }
