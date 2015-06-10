@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <setjmp.h>
 #include <signal.h>
 #include "ult.h"
 #include "tcb.h"
@@ -135,7 +136,7 @@ void ult_init(ult_func f) {
 		tcb_list[i] = malloc(sizeof(tcb));
 		tcb_list[i]->Thread_ID= i; // gleich ID zuweisung
 	}
-	
+}	
 	
 	
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_list[0] hat also Valide werrte
