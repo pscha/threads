@@ -10,7 +10,17 @@
 
 #define MAX_TCB 10
 #define DEBUG 0
+//TODO: Scheduler bitte richtig schreiben :)
+//TODO: Coding style: Variablennamen bitte klein schreiben
 
+/* 
+ * for use in vim:
+ *
+ * :%s/sheduler/scheduler/Ig
+ * :%s/Sheduler/Scheduler/Ig
+ *
+ * :%s/next_TCB/next_tcb/Ig
+ */
 struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_list[MAX_TCB];
