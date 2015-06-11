@@ -14,6 +14,9 @@ struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_list[MAX_TCB];
 
+tcb* next_TCB;  // globale Variable für den nächsten Thread Sheduler 
+
+
 /*
  This function only exists to tell the process to use an empty stack for the thread
  */
@@ -121,19 +124,17 @@ int ult_read(int fd, void *buf, int count) {
  */
 void ult_init(ult_func f) {
 	int i;
-	ult_spawn(f);
-	for(i = 0; i < MAX_TCB; i++){
+	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_list[i] = malloc(sizeof(tcb));
 		tcb_list[i]->Thread_ID= i; // gleich ID zuweisung
 	}
+	
+	ult_spawn(f); 
 	while(1){
 		for(i = 0; i < MAX_TCB; i++){
-			/*
-			 * set context to tcb and if tcb controlled thread yields get the
-			 * context
-			 */
-			tcb_setcontext(tcb_list[i]);
-			tcb_getcontext(tcb_list[i]);
-		}
+			// round - robin sheduler setzt einfach eine Globale Variable auf den nächsten TCB-Struckt
+			next_TCB = tcb_list[i]; // setze nächsten TCB-block ab jetzt werden alle 
+			
+			}
 	}
 }
