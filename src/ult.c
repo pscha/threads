@@ -15,6 +15,8 @@ static fd_set fds;
 tcb* tcb_list[MAX_TCB];
 
 tcb* next_TCB;  // globale Variable für den nächsten Thread Sheduler 
+tcb* current_tcb; // der tcb der momentan ausgeführt wird.
+
 
 
 /*
@@ -123,18 +125,31 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
+	jmp_buf sheduler;
 	int i;
 	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_list[i] = malloc(sizeof(tcb));
 		tcb_list[i]->Thread_ID= i; // gleich ID zuweisung
 	}
 	
-	ult_spawn(f); 
-	while(1){
-		for(i = 0; i < MAX_TCB; i++){
-			// round - robin sheduler setzt einfach eine Globale Variable auf den nächsten TCB-Struckt
-			next_TCB = tcb_list[i]; // setze nächsten TCB-block ab jetzt werden alle 
-			
-			}
+	
+	
+	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_list[0] hat also Valide werrte
+	/*
+	 * Der sheduler wird den Thread 0 starten und diesen bis zum Ult-Wait nicht verlassen. Wobei nach dem 
+	 * verlassen von thread 0 nur noch threadA und threadB abgearbeitet werden bis einer der beiden Blockiert.
+	 * 
+	 * Daher macht es sinn, thread0 thread 0 nach dem ult-Wait in eine andere Qeue zu schieben. 
+	 */
+	
+	i = setjmp(sheduler);
+	if (i){
+		
+		
+		/*
+		 * Hier wird in abhängigkeit von I etwas angestellt
+		 */
 	}
-}
+	longjmp(tcb_list[0]->env,1); 
+	// hier kommen wir nur hin, wenn wir bestimmtes ausführen.
+	
