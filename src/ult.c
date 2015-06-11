@@ -144,6 +144,13 @@ void ult_init(ult_func f) {
 	
 	i = setjmp(sheduler);
 	if (i){
+		if (i==10){
+			next_TCB= tcb_list[1]; // thread a
+		}
+		else if (i==20){
+			
+			next_TCB= tcb_list[2]; // thread b
+		}
 		
 		
 		/*
