@@ -1,4 +1,12 @@
 
+struct tcb_list;
+
+typedef struct tcb_list{
+	struct tcb_list* next;
+	struct tcb* tcb;
+}tcb_list;
+
+
 
 /* type of function executed by thread */
 typedef void (*ult_func)();
