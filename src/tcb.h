@@ -8,7 +8,7 @@ struct tcb_str;	//forward declaration
 typedef struct tcb_str {
 	jmp_buf env; // register und alles wird gespeichert
 	int Thread_ID; // id des Threads
-	
+	int zombie_flag;
 	//fill this struct with statusinformations
 	stack_t	stack;	//stack for local vars
 	/* rest */
