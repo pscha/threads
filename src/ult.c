@@ -124,6 +124,7 @@ void ult_init(ult_func f) {
 	ult_spawn(f);
 	for(i = 0; i < MAX_TCB; i++){
 		tcb_list[i] = malloc(sizeof(tcb));
+		tcb_list[i]->Thread_ID= i; // gleich ID zuweisung
 	}
 	while(1){
 		for(i = 0; i < MAX_TCB; i++){

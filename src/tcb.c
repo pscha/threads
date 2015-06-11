@@ -58,8 +58,6 @@ int tcb_swapcontext(tcb *ourTcb, tcb *newTcb){
 	if  (!tcb_getcontext(ourTcb)){ //
 		tcb_setcontext(newTcb);
 	}
-	tcb_setcontext(newTcb);
-	
 	return 0;
 }
 
