@@ -17,7 +17,8 @@ tcb* tcb_list[MAX_TCB];
 tcb* next_TCB;  // globale Variable für den nächsten Thread Sheduler 
 tcb* current_tcb; // der tcb der momentan ausgeführt wird.
 
-
+jmp_buf sheduler;
+	
 
 /*
  This function only exists to tell the process to use an empty stack for the thread
@@ -47,6 +48,10 @@ int ult_spawn(ult_func f) {
  auf den vom Scheduler ausgewaehlten Thread.
  */
 void ult_yield() {
+	if(!tcb_getcontext(current_tcb)){ // beim setzen der sprungmarke gehen wir in die schleife, sonst nicht.
+		longjmp(sheduler,current_tcb->Thread_ID); // gib die ID nach oben 
+	} 
+	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
 
 
@@ -125,7 +130,6 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
-	jmp_buf sheduler;
 	int i;
 	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_list[i] = malloc(sizeof(tcb));
@@ -144,12 +148,12 @@ void ult_init(ult_func f) {
 	
 	i = setjmp(sheduler);
 	if (i){
-		if (i==10){
-			next_TCB= tcb_list[1]; // thread a
+		if (i==1){
+			next_TCB= tcb_list[2]; // thread a
 		}
-		else if (i==20){
+		else if (i==2){
 			
-			next_TCB= tcb_list[2]; // thread b
+			next_TCB= tcb_list[1]; // thread b
 		}
 		
 		
