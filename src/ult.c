@@ -27,6 +27,15 @@ struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_array[MAX_TCB];
 
+tcb_list* tlist; 
+
+tlist->tcb = NULL;
+tlist->next = NULL;
+
+
+
+
+
 tcb* next_TCB;  // globale Variable für den nächsten Thread Sheduler 
 tcb* current_tcb; // der tcb der momentan ausgeführt wird.
 
@@ -51,6 +60,16 @@ void signalHandlerSpawn( int arg )
  fortgesetzt, um die Erzeugung mehrerer Threads zu ermoeglichen.
  */
 int ult_spawn(ult_func f) {	
+	/* intialize the tcb_list entry*/
+	tcb_list* tcb= malloc(sizeof(tcb_list));
+	tcb->tcb = malloc(sizeof(tcb));
+	tcb->next = tlist; 
+	
+	/* make the thread do something */
+	f();
+
+	
+
 	return 0;		
 }
 
@@ -143,13 +162,16 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
-	int i;
+	/*int i;
 	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_array[i] = malloc(sizeof(tcb));
 		tcb_array[i]->Thread_ID= i; // gleich ID zuweisung
 	}
+	*/
+		
 	
 	
+
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_array[0] hat also Valide werrte
 	/*
 	 * Der sheduler wird den Thread 0 starten und diesen bis zum 
