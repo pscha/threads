@@ -195,7 +195,7 @@ void ult_init(ult_func f) {
 
 
 	/* scheduler */
-	i = setjmp(sheduler);
+	/*i = setjmp(sheduler);
 	if (i){
 		if (i==1){
 			next_TCB= tcb_array[2]; // thread a
@@ -204,7 +204,15 @@ void ult_init(ult_func f) {
 			
 			next_TCB= tcb_array[1]; // thread b
 		}
-		
+	*/
+
+	/* scheduling method: always run the next one */
+	while(tlist){
+		tcb_swapcontext(tlist, tlist->next);
+		tlist = tlist->next;
+	}
+
+	
 		
 		/*
 		 * Hier wird in abhängigkeit von I etwas angestellt
