@@ -29,8 +29,6 @@ tcb* tcb_array[MAX_TCB];
 
 tcb_list* tlist; 
 
-tlist->tcb = NULL;
-tlist->next = NULL;
 
 
 
@@ -62,8 +60,11 @@ void signalHandlerSpawn( int arg )
 int ult_spawn(ult_func f) {	
 	/* intialize the tcb_list entry*/
 	tcb_list* tcb= malloc(sizeof(tcb_list));
+	
 	tcb->tcb = malloc(sizeof(tcb));
 	tcb->next = tlist; 
+	
+	tlist = tcb;
 	
 	/* make the thread do something */
 	f();
@@ -162,12 +163,13 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
-	/*int i;
+	tcb_list* tmp_tlist;
+	int i;
 	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_array[i] = malloc(sizeof(tcb));
 		tcb_array[i]->Thread_ID= i; // gleich ID zuweisung
 	}
-	*/
+	
 		
 	
 	
@@ -182,6 +184,17 @@ void ult_init(ult_func f) {
 	 * Daher macht es sinn, thread0 thread 0 nach dem ult-Wait in eine andere Qeue zu schieben. 
 	 */
 	
+	/* make tlist a circular list */
+	tmp_tlist = tlist;
+	// go to last element in tlist
+	while(tmp_tlist->next != NULL){
+		tmp_tlist = tmp_tlist->next;
+	}
+	// next element of last element is first element
+	tmp_tlist->next = tlist;
+
+
+	/* scheduler */
 	i = setjmp(sheduler);
 	if (i){
 		if (i==1){
