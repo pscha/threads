@@ -44,8 +44,10 @@ jmp_buf sheduler;
  This function only exists to tell the process to use an empty stack for the thread
  */
 void signalHandlerSpawn( int arg )
-{	
-
+{	// so habe ich mir das Vorgestellt 
+	if (setjmp(tlist->tcb->env)){
+		tlist->tcb->func(); // hier funktion ausführen in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
+	}
 
 }
 

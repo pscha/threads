@@ -5,10 +5,14 @@
 
 struct tcb;	//forward declaration
 
+typedef void (*ult_func)();
+
+
 typedef struct tcb {
 	jmp_buf env; // register und alles wird gespeichert
 	int Thread_ID; // id des Threads
 	int zombie_flag;
+	ult_func func;
 	//fill this struct with statusinformations
 	stack_t	stack;	//stack for local vars
 	/* rest */
