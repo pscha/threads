@@ -59,11 +59,14 @@ void signalHandlerSpawn( int arg )
  */
 int ult_spawn(ult_func f) {	
 	/* intialize the tcb_list entry*/
+	printf("1. malloc\n");	
 	tcb_list* tcb= malloc(sizeof(tcb_list));
-	
+	printf("2. malloc\n");	
 	tcb->tcb = malloc(sizeof(tcb));
+	printf("denfine next\n");	
 	tcb->next = tlist; 
 	
+	printf("denfine tlist\n");	
 	tlist = tcb;
 	
 	/* make the thread do something */
