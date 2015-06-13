@@ -66,7 +66,24 @@ int tcb_swapcontext(tcb *ourTcb, tcb *newTcb){
  */
 void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
-	
-	
-	
+  struct sigaction sa;
+  
+  // Create the new stack
+  t->stack.ss_flags = 0;
+  t->stack.ss_size = STACK;
+  t->stack.ss_sp = malloc(STACK );
+  if ( t->stack.ss_sp == 0 ) {
+    perror( "Could not allocate stack." );
+    exit( 1 );
+  }
+  sigaltstack( &t->stack, 0 );
+
+  // Set up the custom signal handler
+  sa.sa_handler = &signalHandler;
+  sa.sa_flags = SA_ONSTACK;
+  sigemptyset( &sa.sa_mask );
+  sigaction( SIGUSR1, &sa, 0 );
+
+  printf( "raise signal\n" );
+  raise( SIGUSR1 );
 }
