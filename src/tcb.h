@@ -22,7 +22,7 @@ typedef struct tcb {
  * diese funktion printet uns mal die Pointer von dem verwendeten Stack
  * reines Debugging
  */
-extern int tcb_contextprint(tcb *t);
+extern int tcb_contextprint();
 
 
 /**

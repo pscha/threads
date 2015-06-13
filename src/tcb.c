@@ -5,12 +5,26 @@
 #include <string.h>
 #include "tcb.h"
 
+/*
+ * Wird aufgerufen wenn der stack erstellt wird
+ */
+void signalHandlerSpawn( int arg )
+{	// so habe ich mir das Vorgestellt 
+	tcb_contextprint(); // printet den stackpointer raus wenn ult_spawn einen thread erzeugt
+	
+	if (setjmp(tlist->tcb->env)){
+		tlist->tcb->func(); // hier funktion ausführen in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
+	}
+
+}
+
+
 
 /**
  * diese funktion printet uns mal die Pointer von dem verwendeten Stack
  * reines Debugging
  */
-int tcb_contextprint(tcb *t){
+int tcb_contextprint(){
 	long stackp = 0;
 	long basep = 0;
 	__asm__ __volatile__ ( "mov %%ebp, %%eax":"=a" (basep));
@@ -70,8 +84,8 @@ void tcb_makecontext(tcb *t){
   
   // Create the new stack
   t->stack.ss_flags = 0;
-  t->stack.ss_size = STACK;
-  t->stack.ss_sp = malloc(STACK );
+  t->stack.ss_size = STACKSIZE;
+  t->stack.ss_sp = malloc(STACKSIZE);
   if ( t->stack.ss_sp == 0 ) {
     perror( "Could not allocate stack." );
     exit( 1 );
