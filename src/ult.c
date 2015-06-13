@@ -51,6 +51,37 @@ void signalHandlerSpawn( int arg )
 
 }
 
+void tcb_makecontext(tcb *t){
+	// malloc der stacksize zum erzeugen des Stacks
+  struct sigaction sa;
+  
+  // Create the new stack
+  t->stack.ss_flags = 0;
+  t->stack.ss_size = STACKSIZE;
+  t->stack.ss_sp = malloc(STACKSIZE);
+  if ( t->stack.ss_sp == 0 ) {
+    perror( "Could not allocate stack." );
+    exit( 1 );
+  }
+  sigaltstack( &t->stack, 0 );
+
+  // Set up the custom signal handler
+  sa.sa_handler = &signalHandlerSpawn;
+  sa.sa_flags = SA_ONSTACK;
+  sigemptyset( &sa.sa_mask );
+  sigaction( SIGUSR1, &sa, 0 );
+
+  printf( "raise signal\n" );
+  raise( SIGUSR1 );
+}
+
+/*
+ * ---------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------------------
+ */
+
 
 // spawn a new thread, return its ID 
 /*	Die Funktion ult_spawn() erzeugt einen Thread-Control-Block (TCB) fuer

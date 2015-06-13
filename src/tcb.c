@@ -5,19 +5,9 @@
 #include <string.h>
 #include "tcb.h"
 
-tcb* make_current_tcb; // hilfsvariable zum setzen des initialen tcb_setjumps
 /*
  * Wird aufgerufen wenn der stack erstellt wird
  */
-void signalHandlerSpawn( int arg )
-{	// so habe ich mir das Vorgestellt 
-	tcb_contextprint(); // printet den stackpointer raus wenn ult_spawn einen thread erzeugt
-	
-	if (setjmp(make_current_tcb->env)){
-		tlist->tcb->func(); // hier funktion ausführen in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
-	}
-
-}
 
 
 
@@ -78,7 +68,7 @@ int tcb_swapcontext(tcb *ourTcb, tcb *newTcb){
 
 /**
  * erzeugt einen Neuen Kontext mit der übergebenen FUnktion. Wenn der Kontext aufgerufen wird wird die FUnktion ausgeführt.
- */
+
 void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
   struct sigaction sa;
@@ -102,3 +92,4 @@ void tcb_makecontext(tcb *t){
   printf( "raise signal\n" );
   raise( SIGUSR1 );
 }
+ */

@@ -50,6 +50,6 @@ extern int tcb_swapcontext(tcb *ourTcb, tcb *newTcb);
 /**
  * erzeugt einen Neuen Kontext mit der übergebenen FUnktion. Wenn der Kontext aufgerufen wird wird die FUnktion ausgeführt.
  */
-extern void tcb_makecontext(tcb *t);
+//extern void tcb_makecontext(tcb *t);
 
 
