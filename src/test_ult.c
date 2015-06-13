@@ -14,17 +14,22 @@ void threadA()
 	char c[256];
 	FILE* rnd;
 	int fd;	
-	
+
+	printf("in Thread A\n");
+
 	start_time = time(NULL);
 	rnd = fopen("/dev/random","r");
 	fd = fileno(rnd);
 
+	printf("in before while\n");
 	while(!end_copying)
 	{
-		ult_read(fd,c,256); 
+		printf("in while\n");
+		ult_read(fd,c,255); 
 		copyed_bytes = copyed_bytes + 256;			
 		ult_yield();
 	}
+	printf("before exit\n");
 	ult_exit(0);
 }
 

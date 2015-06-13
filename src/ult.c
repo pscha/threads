@@ -68,10 +68,12 @@ int ult_spawn(ult_func f) {
 	
 	printf("denfine tlist\n");	
 	tlist = tcb;
-	
+		
+	printf("denfine execute function\n");	
 	/* make the thread do something */
 	f();
 
+	printf("end of spawn\n");
 	
 
 	return 0;		
@@ -136,7 +138,7 @@ int ult_read(int fd, void *buf, int count) {
 	
   int data; //returns != 0 if data is available
   ssize_t nread;
-
+	printf("in ult_read\n");
   if (!FD_ISSET(fd, &fds)) {
     FD_SET(fd, &fds);       //Creating fd_set for select()
   }

@@ -2,8 +2,8 @@
 struct tcb_list;
 
 typedef struct tcb_list{
-	struct tcb_list* next;
-	struct tcb* tcb;
+	struct tcb_list *next;
+	struct tcb *tcb;
 }tcb_list;
 
 
