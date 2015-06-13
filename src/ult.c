@@ -208,7 +208,7 @@ void ult_init(ult_func f) {
 
 	/* scheduling method: always run the next one */
 	while(tlist){
-		tcb_swapcontext(tlist, tlist->next);
+		tcb_swapcontext(tlist->tcb, tlist->next->tcb);
 		tlist = tlist->next;
 	}
 
@@ -217,8 +217,9 @@ void ult_init(ult_func f) {
 		/*
 		 * Hier wird in abhängigkeit von I etwas angestellt
 		 */
-	}
-	longjmp(tcb_array[0]->env,1); 
+	
+	/* Longjumps in der ult.c? */
+	// longjmp(tcb_array[0]->env,1); 
 	// hier kommen wir nur hin, wenn wir bestimmtes ausführen.
 	
 }	

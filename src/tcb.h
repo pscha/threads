@@ -3,9 +3,9 @@
 
 #define STACKSIZE	64*1024	//approriate stack size
 
-struct tcb_str;	//forward declaration
+struct tcb;	//forward declaration
 
-typedef struct tcb_str {
+typedef struct tcb {
 	jmp_buf env; // register und alles wird gespeichert
 	int Thread_ID; // id des Threads
 	int zombie_flag;
