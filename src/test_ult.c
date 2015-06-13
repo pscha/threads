@@ -25,9 +25,12 @@ void threadA()
 	while(!end_copying)
 	{
 		printf("in while\n");
-		ult_read(fd,c,255); 
+		ult_read(fd,c,250); 
+		printf("in while1\n");
 		copyed_bytes = copyed_bytes + 256;			
+		printf("in while2\n");
 		ult_yield();
+		printf("in while3\n");
 	}
 	printf("before exit\n");
 	ult_exit(0);

@@ -86,7 +86,9 @@ int ult_spawn(ult_func f) {
  auf den vom Scheduler ausgewaehlten Thread.
  */
 void ult_yield() {
+	printf("in yield\n");
 	if(!tcb_getcontext(current_tcb)){ // beim setzen der sprungmarke gehen wir in die schleife, sonst nicht.
+		printf("in if\n");
 		longjmp(sheduler,current_tcb->Thread_ID); // gib die ID nach oben 
 	} 
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
@@ -138,11 +140,11 @@ int ult_read(int fd, void *buf, int count) {
 	
   int data; //returns != 0 if data is available
   ssize_t nread;
-	printf("in ult_read\n");
   if (!FD_ISSET(fd, &fds)) {
     FD_SET(fd, &fds);       //Creating fd_set for select()
   }
 
+	printf("\n");
   //set time select() is going to wait
   tv_str.tv_sec = 0;
   tv_str.tv_usec = 200;
