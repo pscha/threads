@@ -66,15 +66,22 @@ int ult_spawn(ult_func f) {
 	printf("2. malloc\n");	
 	tcb->tcb = malloc(sizeof(tcb));
 	printf("denfine next\n");	
-	tcb->next = tlist; 
+	tcb->next = tlist;
 	
 	printf("denfine tlist\n");	
 	tlist = tcb;
 		
 	printf("denfine execute function\n");	
 	/* make the thread do something */
-	f();
+	tcb->tcb->func = f; // schreibe func-pointer in den TCB ab hier sind Kontext und ausfphrung mitenander verbunden
 
+	tcb_makecontext(tcb->tcb); // hier wird dann der stack gesetzt, sodass ab hier der TCB block fertig sein müsste
+	
+	// ab diesem Zeitpunkt befinden wir uns noch in dem Kontext in welcher die fkt ult_spawn aufgerufen wurde und haben einen voll funktions-
+	// tüchtigen TCB mit einer neuen Funktion erstellt.
+	
+	// noch thread ID setzen einfügen
+	
 	printf("end of spawn\n");
 	
 

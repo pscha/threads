@@ -64,9 +64,9 @@ int tcb_swapcontext(tcb *ourTcb, tcb *newTcb){
 /**
  * erzeugt einen Neuen Kontext mit der übergebenen FUnktion. Wenn der Kontext aufgerufen wird wird die FUnktion ausgeführt.
  */
-int tcb_makecontext(tcb *t, void *func(), int argc, ...){
+void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
 	
 	
-	return 0;
+	
 }
