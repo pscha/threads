@@ -123,11 +123,6 @@ void ult_yield() {
 	printf("in yield\n");
 	
 	tcb_swapcontext(tlist->tcb,scheduler_tcb);
-	
-	if(!tcb_getcontext(tlist->tcb)){ // beim setzen der sprungmarke gehen wir in die schleife, sonst nicht.
-		printf("in if\n");
-		longjmp(sheduler,tlist->tcb->Thread_ID); // gib die ID nach oben 
-	} 
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
 
