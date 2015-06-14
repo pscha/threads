@@ -207,6 +207,7 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
+	scheduler_tcb = malloc(sizeof(tcb)); // hole speicher für tcbblock
 	tcb_list* tmp_tlist;
 	int i;
 	scheduler_tcb->Thread_ID = 42;  // main thread ID wird auf 42 gesetzt  weil wir das können
