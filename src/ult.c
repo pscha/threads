@@ -41,6 +41,7 @@ void signalHandlerSpawn( int arg )
 {	
 	printf("Signalhandler-aufruf Stackdaten:\n");
 	tcb_contextprint();
+	printf("tcb:%p\n",tlist);	
 	if (setjmp(tlist->tcb->env)){
 		tlist->tcb->func(); // hier funktion ausführen in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
 	}
@@ -55,7 +56,7 @@ void tcb_makecontext(tcb *t){
   t->stack.ss_flags = 0;
   t->stack.ss_size = STACKSIZE;
   t->stack.ss_sp = malloc(STACKSIZE);
-  if ( t->stack.ss_sp == 0 ) {
+  if ( t->stack.ss_sp == NULL ) {
     perror( "Could not allocate stack." );
     exit( 1 );
   }
@@ -94,15 +95,18 @@ int ult_spawn(ult_func f) {
 	tcb->tcb = malloc(sizeof(tcb));
 	printf("denfine next\n");	
 	tcb->next = tlist;
-	
 	printf("denfine tlist\n");	
 	tlist = tcb;
 		
 	printf("denfine execute function\n");	
 	/* make the thread do something */
 	tcb->tcb->func = f; // schreibe func-pointer in den TCB ab hier sind Kontext und ausfphrung mitenander verbunden
+		printf("spawn 2\n");
+		tcb_contextprint();
 
 	tcb_makecontext(tcb->tcb); // hier wird dann der stack gesetzt, sodass ab hier der TCB block fertig sein müsste
+		printf("spawn 2\n");
+		tcb_contextprint();
 	
 	// ab diesem Zeitpunkt befinden wir uns noch in dem Kontext in welcher die fkt ult_spawn aufgerufen wurde und haben einen voll funktions-
 	// tüchtigen TCB mit einer neuen Funktion erstellt.
