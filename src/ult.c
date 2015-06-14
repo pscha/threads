@@ -167,7 +167,13 @@ void ult_exit(int status) {
  Thread die CPU erhaelt).
  */
 int ult_waitpid(int tid, int *status) {
-
+	while(zlist->next != NULL){
+		if(zlist->thread_id == tid){
+			&status = zlist->status;
+			return(0);
+		}
+		ult_yield();
+	
 	return -1;	//return 'error'
 }
 
