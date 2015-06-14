@@ -141,11 +141,10 @@ void ult_exit(int status) {
 	zombie.nextzombie = zlist; // Append an liste, wenn erstes Element dann = NULL
 	zlist = &zombie; 
 	// zombie_list hat ein neuen Element
+	free(tlist->tcb->stack.ss_sp); // Free the Stack!
+	free(tlist->tcb); // free the tcb der Thread exestiert nicht mehr alle Pointer und jmp_buf löschen
 	
-	ult_yield(); // springt nach Exit zum sheduler 
-	
-	printf("DIese Printausgabe DARF NICHT STATTFINDEN das bedeutet,\n das ein Zombie-thread ausgeführt wird\n");
-	
+	longjmp(scheduler_tcb->env,100); // springe zum sheduler 	
 }
 
 /*	Mit ult_waitpid() kann abgefragt werden, ob der Thread mit dem angegebenen
@@ -243,14 +242,14 @@ void ult_init(ult_func f) {
 		
 		
 		/*
-		 *  TODO:  Wenn ein Zombieflag gesetzt ist so tue folgendes: fülle
-		 *	mit den relevanten Daten geefüllt (status, thread-ID) dann wird der TCB gelöscht, dabei muss auch der Stack gelöscht werden(free)
+		 *  TODO:  Wenn ein Zombieflag gesetzt ist so tue folgendes: Lösche den Thread aus der Running_queue 
 		 * 	
 		 */
 		 
 		 /*
 		  * TODO: Wenn sich in der Zombieliste etwas befindet, so wird in der Waiting-list nachgeschaut... wenn die Threadids identisch sind, so kehre
-		  * in den hinterlegten tcb zurück welcher in einem Waiting-struct gespechertn worden ist
+		  * in den hinterlegten tcb zurück welcher in einem Waiting-struct gespechertn worden ist, außerdem lösche das Zombie-element, dann ist jeglicher hinweis
+		  * auf das Leben des Thread vernichtet worden.
 		  */
 		tlist = tlist->next;
 	}
