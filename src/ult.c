@@ -214,49 +214,26 @@ void ult_init(ult_func f) {
 		tcb_array[i] = malloc(sizeof(tcb));
 		tcb_array[i]->Thread_ID= i; // gleich ID zuweisung
 	}
-	
-		
-	
-	
 
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_array[0] hat also Valide werrte
-	/*
-	 * Der sheduler wird den Thread 0 starten und diesen bis zum 
-	 * Ult-Wait nicht verlassen. Wobei nach dem 
-	 * verlassen von thread 0 nur noch threadA und threadB abgearbeitet
-	 * werden bis einer der beiden Blockiert.
-	 * 
-	 * Daher macht es sinn, thread0 thread 0 nach dem ult-Wait in eine andere Qeue zu schieben. 
-	 */
-	
+
+	tcb_swapcontext(scheduler_tcb,tlist->tcb); // führe thread "my init" aus und starte den Sheduler
+
 	/* make tlist a circular list */
 	tmp_tlist = tlist;
 	// go to last element in tlist
-	while(tmp_tlist->next != NULL){
-		
-		
-		
+	while(tmp_tlist->next != NULL){	
 		tmp_tlist = tmp_tlist->next; // iterieren durch die qeue 
 	}
 	// next element of last element is first element
 	tmp_tlist->next = tlist;
-
-	
-	/* scheduler */
-	/*i = setjmp(sheduler);
-	if (i){
-		if (i==1){
-			next_TCB= tcb_array[2]; // thread a
-		}
-		else if (i==2){
-			
-			next_TCB= tcb_array[1]; // thread b
-		}
-	*/
+	//------------------------------------------------------------------
 
 	/* scheduling method: always run the next one */
 	while(tlist){
-		tcb_swapcontext(scheduler_tcb, tlist->next->tcb); // scheduler_tcb repräsentiert unseren Main Thread
+		tcb_swapcontext(scheduler_tcb, tlist->tcb); // scheduler_tcb repräsentiert unseren Main Thread
+		// hier müssen instruktionen hin damit der sheduler korrekt weiterarbeitet. der nächste Tcb wird dann im folgenden Schleifendurchlauf aufgerufen.
+		
 		tlist = tlist->next;
 	}
 
