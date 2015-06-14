@@ -38,7 +38,9 @@ jmp_buf sheduler;
  This function only exists to tell the process to use an empty stack for the thread
  */
 void signalHandlerSpawn( int arg )
-{	// so habe ich mir das Vorgestellt 
+{	
+	printf("Signalhandler-aufruf Stackdaten:\n");
+	tcb_contextprint();
 	if (setjmp(tlist->tcb->env)){
 		tlist->tcb->func(); // hier funktion ausführen in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
 	}
@@ -120,8 +122,8 @@ int ult_spawn(ult_func f) {
  auf den vom Scheduler ausgewaehlten Thread.
  */
 void ult_yield() {
-	printf("in yield\n");
-	
+	printf("in yield\nSpringe von:");
+	tcb_contextprint();
 	tcb_swapcontext(tlist->tcb,scheduler_tcb);
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
