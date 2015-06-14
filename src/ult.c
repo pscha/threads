@@ -26,6 +26,8 @@ static fd_set fds;
 tcb* tcb_array[MAX_TCB];
 
 tcb_list* tlist;  // first TCB  AkA  current_tcb
+zombie_list* zlist; // last element in Zombie-queue
+waiting_list* wlist; // waiting-List 
 
 tcb* scheduler_tcb; // schedulerTCB  auch als Prozzess-TCB beaknnt braucht nur gespeichert zu werden
 
@@ -131,7 +133,15 @@ void ult_yield() {
  */
 void ult_exit(int status) {
 	tlist->tcb->zombie_flag = status; // zombieflag wird gesetzt
-	// TODO: der thread muss aus der queue entfernt werden, oder aber der sheduler kümmert sich darum
+	
+	// Zombieelement Appenden
+	zombie_list zombie; 
+	zombie.thread_id= tlist->tcb->Thread_ID; // Thread ID wurde zum Zombie
+	zombie.status = status; // setze exit_status
+	zombie.nextzombie = zlist; // Append an liste, wenn erstes Element dann = NULL
+	zlist = &zombie; 
+	// zombie_list hat ein neuen Element
+	
 	ult_yield(); // springt nach Exit zum sheduler 
 	
 	printf("DIese Printausgabe DARF NICHT STATTFINDEN das bedeutet,\n das ein Zombie-thread ausgeführt wird\n");
@@ -196,6 +206,8 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
+	zlist = NULL; // wir haben noch keine Zombies
+	wlist = NULL; // waiting_list für später
 	scheduler_tcb = malloc(sizeof(tcb)); // hole speicher für tcbblock
 	tcb_list* tmp_tlist;
 	int i;
@@ -224,6 +236,22 @@ void ult_init(ult_func f) {
 		tcb_swapcontext(scheduler_tcb, tlist->tcb); // scheduler_tcb repräsentiert unseren Main Thread
 		// hier müssen instruktionen hin damit der sheduler korrekt weiterarbeitet. der nächste Tcb wird dann im folgenden Schleifendurchlauf aufgerufen.
 		
+		/*
+		 * TODO: ACHTUNG ABSOLUT WICHTIG !!!!!!!!!!!!!!!!!!!
+		 * tlist muss IMMER auf den tcb zeigen in dem Kontext wir uns befinden, der Thread muss darauf achten!
+		 */
+		
+		
+		/*
+		 *  TODO:  Wenn ein Zombieflag gesetzt ist so tue folgendes: fülle
+		 *	mit den relevanten Daten geefüllt (status, thread-ID) dann wird der TCB gelöscht, dabei muss auch der Stack gelöscht werden(free)
+		 * 	
+		 */
+		 
+		 /*
+		  * TODO: Wenn sich in der Zombieliste etwas befindet, so wird in der Waiting-list nachgeschaut... wenn die Threadids identisch sind, so kehre
+		  * in den hinterlegten tcb zurück welcher in einem Waiting-struct gespechertn worden ist
+		  */
 		tlist = tlist->next;
 	}
 

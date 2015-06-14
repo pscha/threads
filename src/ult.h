@@ -12,6 +12,12 @@ typedef struct zombie_list{
 	struct zombie_list *nextzombie;
 }zombie_list;
 
+typedef struct waiting_list{
+	struct tcb* waiting_tcb; // der Thread der auf das beenden dieses Threads wartet
+	int thread_id;
+	struct waiting_list *next_wait; 
+}waiting_list;
+
 
 
 

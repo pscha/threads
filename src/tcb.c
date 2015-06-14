@@ -5,12 +5,6 @@
 #include <string.h>
 #include "tcb.h"
 
-/*
- * Wird aufgerufen wenn der stack erstellt wird
- */
-
-
-
 /**
  * diese funktion printet uns mal die Pointer von dem verwendeten Stack
  * reines Debugging
@@ -23,7 +17,6 @@ int tcb_contextprint(){
 	printf("SignalhandlerSpawn Stackpointer : %lu Basepointer: %lu\n",stackp,basep);
 	return 0;
 }
-
 
 /**
  * Speichert den aktuellen Kontext in der übergebenen tcb-strukt
@@ -39,7 +32,6 @@ int tcb_getcontext(tcb *t){
  	return 0; // Wenn wir etwas gespeichert haben zeigen wir das mit einer 0
 }
 
-
 /**
  * setzt den aktuellen kontext aus der übergebenen Strucktur. Befehle nach diesem werden nicht ausgelöst, da 
  * der IP neu gesetzt wird
@@ -51,7 +43,6 @@ int tcb_setcontext(tcb *t){
 	
 	return 0;
 }
-
 
 /**
  * Wechselt die TCB-kontexte. beim erneuten Laden taucht das Programm aus dieser methode auf (wie Yield quasi)
