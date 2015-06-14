@@ -209,6 +209,7 @@ int ult_read(int fd, void *buf, int count) {
 void ult_init(ult_func f) {
 	tcb_list* tmp_tlist;
 	int i;
+	zombie_list* tmp_zlist;
 	zlist = NULL; // wir haben noch keine Zombies
 	wlist = NULL; // waiting_list für später
 	scheduler_tcb = malloc(sizeof(tcb)); // hole speicher für tcbblock
@@ -255,6 +256,10 @@ void ult_init(ult_func f) {
 		 if(tlist->next->tcb == NULL){
 			tmp_tlist = tlist->next;
 			tlist->next = tlist->next->next;
+			tmp_zlist = malloc(sizeof(zombie_list));
+			tmp_zlist->Thread_ID = tmp_tlist->Thread_ID;
+			tmp_zlist->nextzombie = zlist;
+			zlist=tmp_zlist;
 			free(tmp_tlist);
 			tmp_tlist = NULL;
 		}
