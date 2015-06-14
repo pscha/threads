@@ -20,7 +20,7 @@ int tcb_contextprint(){
 	long basep = 0;
 	__asm__ __volatile__ ( "mov %%ebp, %%eax":"=a" (basep));
 	__asm__ __volatile__ ( "mov %%esp, %%eax":"=a" (stackp));
-	printf("SignalhandlerAdv Stackpointer : %lu Basepointer: %lu\n",stackp,basep);
+	printf("SignalhandlerSpawn Stackpointer : %lu Basepointer: %lu\n",stackp,basep);
 	return 0;
 }
 
@@ -32,6 +32,7 @@ int tcb_contextprint(){
 int tcb_getcontext(tcb *t){
 	if (setjmp(t->env)){ // speichert die Umgebungsvar in den jmp_buf des zugewiesenen TCB 
 		printf("Thread %d wird weiter bearbeitet",t->Thread_ID);
+		tcb_contextprint();
 		return 1; // wenn wir hier wieder kommen signalisieren wir das mit einer 1
 	}
  	// hier gehts dann weiter, wenn der TCB wieder geladen wird.
