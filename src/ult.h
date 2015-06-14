@@ -6,6 +6,13 @@ typedef struct tcb_list{
 	struct tcb *tcb;
 }tcb_list;
 
+typedef struct zombie_list{
+	int thread_id;
+	int status;
+	struct zombie_list *nextzombie;
+}zombie_list;
+
+
 
 
 /* type of function executed by thread */

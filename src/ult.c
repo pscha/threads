@@ -126,8 +126,6 @@ void ult_yield() {
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
 
-
-// current thread exits
 /*	Wird innerhalb eines Threads ult_exit() aufgerufen, so wird der Thread
  zum Zombie und der Exit-Status wird abgespeichert.
  */
@@ -140,10 +138,6 @@ void ult_exit(int status) {
 	
 }
 
-
-// thread waits for termination of another thread
-// returns 0 for success, -1 for failure
-// exit-status of terminated thread is obtained
 /*	Mit ult_waitpid() kann abgefragt werden, ob der Thread mit dem angegebenen
  ID bereits beendet wurde. Ist der Thread bereits beendet, so kehrt die
  Funktion sofort zurueck und liefert in status den Exit-Status des Threads
@@ -158,9 +152,6 @@ int ult_waitpid(int tid, int *status) {
 	return -1;	//return 'error'
 }
 
-
-
-// read from file, block the thread if no data available
 /*	Hinter ult_read() verbirgt sich die Funktion read() der Unix-API, welche Daten
  aus einer Datei (File-Deskriptor fd) in einen Puffer (buf) liest. Die Funktion
  ult_read() ist eine Wrapper-Funktion fuer read(), welche zusaetzlich ueberprueft, ob
@@ -174,8 +165,7 @@ int ult_waitpid(int tid, int *status) {
  lauffaehig waeren). Wir kuemmern uns hier nur um die read()-Funktion, obwohl auch andere
  Systemrufe blockieren koennen.
  */
-int ult_read(int fd, void *buf, int count) {
-	
+int ult_read(int fd, void *buf, int count) {	
   int data; //returns != 0 if data is available
   ssize_t nread;
   if (!FD_ISSET(fd, &fds)) {
@@ -199,8 +189,6 @@ int ult_read(int fd, void *buf, int count) {
   return -1;
 }
 
-
-// start scheduling and spawn a thread running function f
 /*	Die Funktion ult_init() initialisiert die Bibliothek (insbesondere die Datenstrukturen
  des Schedulers wie z.B. Thread-Listen) und muss vor allen anderen Funktionen aufgerufen
  werden. Sie erzeugt einen einzigen Thread (analog zum Init-Threadâ bei Unix), aus
