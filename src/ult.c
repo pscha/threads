@@ -141,7 +141,10 @@ void ult_exit(int status) {
 	zombie.nextzombie = zlist; // Append an liste, wenn erstes Element dann = NULL
 	zlist = &zombie; 
 	// zombie_list hat ein neuen Element
+	printf("free stackpointer\n");
 	free(tlist->tcb->stack.ss_sp); // Free the Stack!
+	tlist->tcb->stack.ss_sp = NULL;
+	printf("free tcb\n");
 	free(tlist->tcb); // free the tcb der Thread exestiert nicht mehr alle Pointer und jmp_buf löschen
 	tlist->tcb = NULL; 
 	
@@ -160,6 +163,7 @@ void ult_exit(int status) {
  Thread die CPU erhaelt).
  */
 int ult_waitpid(int tid, int *status) {
+
 	return -1;	//return 'error'
 }
 
@@ -257,9 +261,10 @@ void ult_init(ult_func f) {
 			tmp_tlist = tlist->next;
 			tlist->next = tlist->next->next;
 			tmp_zlist = malloc(sizeof(zombie_list));
-			tmp_zlist->Thread_ID = tmp_tlist->Thread_ID;
+			tmp_zlist->thread_id = tmp_tlist->tcb->Thread_ID;
 			tmp_zlist->nextzombie = zlist;
 			zlist=tmp_zlist;
+			printf("free tmp_tlist\n");
 			free(tmp_tlist);
 			tmp_tlist = NULL;
 		}
