@@ -207,11 +207,11 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
+	tcb_list* tmp_tlist;
+	int i;
 	zlist = NULL; // wir haben noch keine Zombies
 	wlist = NULL; // waiting_list für später
 	scheduler_tcb = malloc(sizeof(tcb)); // hole speicher für tcbblock
-	tcb_list* tmp_tlist;
-	int i;
 	scheduler_tcb->Thread_ID = 42;  // main thread ID wird auf 42 gesetzt  weil wir das können
 	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_array[i] = malloc(sizeof(tcb));
@@ -232,6 +232,9 @@ void ult_init(ult_func f) {
 	tmp_tlist->next = tlist;
 	//------------------------------------------------------------------
 
+	/* tmp_tlist ain't needed anymore */
+	tmp_tlist = NULL;
+
 	/* scheduling method: always run the next one */
 	while(tlist){
 		tcb_swapcontext(scheduler_tcb, tlist->tcb); // scheduler_tcb repräsentiert unseren Main Thread
@@ -247,7 +250,15 @@ void ult_init(ult_func f) {
 		 *  TODO:  Wenn ein Zombieflag gesetzt ist so tue folgendes: Lösche den Thread aus der Running_queue 
 		 * 	
 		 */
-		 
+		
+		/* free the zombies */
+		 if(tlist->next->tcb == NULL){
+			tmp_tlist = tlist->next;
+			tlist->next = tlist->next->next;
+			free(tmp_tlist);
+			tmp_tlist = NULL;
+		}
+			 
 		 /*
 		  * TODO: Wenn sich in der Zombieliste etwas befindet, so wird in der Waiting-list nachgeschaut... wenn die Threadids identisch sind, so kehre
 		  * in den hinterlegten tcb zurück welcher in einem Waiting-struct gespechertn worden ist, außerdem lösche das Zombie-element, dann ist jeglicher hinweis
