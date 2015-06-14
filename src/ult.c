@@ -10,9 +10,7 @@
 
 #define MAX_TCB 10
 #define DEBUG 0
-
-//TODO: Scheduler bitte richtig schreiben :)
-//TODO: Coding style: Variablennamen bitte klein schreiben
+#define THREAD_IS_ALIVE 1337
 
 /* 
  * for use in vim:
@@ -138,7 +136,7 @@ void ult_exit(int status) {
 	// TODO: der thread muss aus der queue entfernt werden, oder aber der sheduler kümmert sich darum
 	ult_yield(); // springt nach Exit zum sheduler 
 	
-	printf("DIese Printausgabe DARF NICHT STATTFINDEN das bedeutet,\n das ein Zombie-thread ausgeführt wird\n")
+	printf("DIese Printausgabe DARF NICHT STATTFINDEN das bedeutet,\n das ein Zombie-thread ausgeführt wird\n");
 	
 }
 
