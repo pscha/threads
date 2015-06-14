@@ -134,6 +134,12 @@ void ult_yield() {
  zum Zombie und der Exit-Status wird abgespeichert.
  */
 void ult_exit(int status) {
+	tlist->tcb->zombie_flag = status; // zombieflag wird gesetzt
+	// TODO: der thread muss aus der queue entfernt werden, oder aber der sheduler kümmert sich darum
+	ult_yield(); // springt nach Exit zum sheduler 
+	
+	printf("DIese Printausgabe DARF NICHT STATTFINDEN das bedeutet,\n das ein Zombie-thread ausgeführt wird\n")
+	
 }
 
 
