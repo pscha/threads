@@ -27,15 +27,10 @@ struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_array[MAX_TCB];
 
-tcb_list* tlist; 
+tcb_list* tlist;  // first TCB  AkA  current_tcb
 
-
-
-
-
-
-tcb* next_TCB;  // globale Variable für den nächsten Thread Sheduler 
-tcb* current_tcb; // der tcb der momentan ausgeführt wird.
+tcb* next_TCB;  // globale Variable fuer den naechsten Thread Sheduler 
+tcb* current_tcb; // der tcb der momentan ausgefuehrt wird. 
 
 jmp_buf sheduler;
 	
@@ -127,9 +122,9 @@ int ult_spawn(ult_func f) {
  */
 void ult_yield() {
 	printf("in yield\n");
-	if(!tcb_getcontext(current_tcb)){ // beim setzen der sprungmarke gehen wir in die schleife, sonst nicht.
+	if(!tcb_getcontext(tlist->tcb)){ // beim setzen der sprungmarke gehen wir in die schleife, sonst nicht.
 		printf("in if\n");
-		longjmp(sheduler,current_tcb->Thread_ID); // gib die ID nach oben 
+		longjmp(sheduler,tlist->tcb->Thread_ID); // gib die ID nach oben 
 	} 
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
@@ -235,7 +230,7 @@ void ult_init(ult_func f) {
 	tmp_tlist = tlist;
 	// go to last element in tlist
 	while(tmp_tlist->next != NULL){
-		tmp_tlist = tmp_tlist->next;
+		tmp_tlist = tmp_tlist->next; // iterieren durch die qeue 
 	}
 	// next element of last element is first element
 	tmp_tlist->next = tlist;
