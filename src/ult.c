@@ -29,8 +29,7 @@ tcb* tcb_array[MAX_TCB];
 
 tcb_list* tlist;  // first TCB  AkA  current_tcb
 
-tcb* next_TCB;  // globale Variable fuer den naechsten Thread Sheduler 
-tcb* current_tcb; // der tcb der momentan ausgefuehrt wird. 
+tcb* scheduler_tcb; // schedulerTCB  auch als Prozzess-TCB beaknnt braucht nur gespeichert zu werden
 
 jmp_buf sheduler;
 	
@@ -122,6 +121,9 @@ int ult_spawn(ult_func f) {
  */
 void ult_yield() {
 	printf("in yield\n");
+	
+	tcb_swapcontext(tlist->tcb,scheduler_tcb);
+	
 	if(!tcb_getcontext(tlist->tcb)){ // beim setzen der sprungmarke gehen wir in die schleife, sonst nicht.
 		printf("in if\n");
 		longjmp(sheduler,tlist->tcb->Thread_ID); // gib die ID nach oben 
@@ -207,6 +209,7 @@ int ult_read(int fd, void *buf, int count) {
 void ult_init(ult_func f) {
 	tcb_list* tmp_tlist;
 	int i;
+	scheduler_tcb->Thread_ID = 42;  // main thread ID wird auf 42 gesetzt  weil wir das können
 	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
 		tcb_array[i] = malloc(sizeof(tcb));
 		tcb_array[i]->Thread_ID= i; // gleich ID zuweisung
@@ -230,6 +233,9 @@ void ult_init(ult_func f) {
 	tmp_tlist = tlist;
 	// go to last element in tlist
 	while(tmp_tlist->next != NULL){
+		
+		
+		
 		tmp_tlist = tmp_tlist->next; // iterieren durch die qeue 
 	}
 	// next element of last element is first element
@@ -250,7 +256,7 @@ void ult_init(ult_func f) {
 
 	/* scheduling method: always run the next one */
 	while(tlist){
-		tcb_swapcontext(tlist->tcb, tlist->next->tcb);
+		tcb_swapcontext(scheduler_tcb, tlist->next->tcb); // scheduler_tcb repräsentiert unseren Main Thread
 		tlist = tlist->next;
 	}
 
