@@ -158,6 +158,27 @@ void ult_exit(int status) {
  Thread die CPU erhaelt).
  */
 int ult_waitpid(int tid, int *status) {
+	/*
+	 * TODO: hier muss eine Überprüfung der Zombielemente vorgenommen werden, wenn das Element ein zombie ist, so returne den exit-status
+	 * Wenn jedoch das Element NICHT in der Zlist zu finden ist so erstelle ein Waiting-element und fürlle eine Waiting-list danach führe ein 
+	 * yield aus, 
+	 */
+	 zombie_list *zombie;
+	 zombie = zlist; //damit wir den zlistpointer nicht verändern
+	 
+	 while (zombie != NULL){ // exestieren zombies dann...
+		 if(tid == zombie->thread_id){ // wenn gesuchte ID gefunden wurde dann...
+			 status= &zombie->status; // nur existent wenn das Zombieelement exestiert ?!?!!!??!?!???? 
+			 return 0; // ich returne null weil alles gut funktioniert hat, wir muessen das Interface einhalten daher den status NICHT returnen
+		 }
+		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->status);
+		 zombie = zombie->nextzombie; // itterieren der Zombieliste
+	 }
+	
+	// wenn ich hier hinkomme so wurde das Element nicht gefunden
+	
+	
+	
 	return -1;	//return 'error'
 }
 
