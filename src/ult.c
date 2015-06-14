@@ -143,7 +143,9 @@ void ult_exit(int status) {
 	// zombie_list hat ein neuen Element
 	free(tlist->tcb->stack.ss_sp); // Free the Stack!
 	free(tlist->tcb); // free the tcb der Thread exestiert nicht mehr alle Pointer und jmp_buf löschen
+	tlist->tcb = NULL; 
 	
+
 	longjmp(scheduler_tcb->env,100); // springe zum sheduler 	
 }
 
