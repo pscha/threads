@@ -12,6 +12,7 @@ typedef struct tcb {
 	jmp_buf env; // register und alles wird gespeichert
 	int Thread_ID; // id des Threads
 	int zombie_flag;
+	int waiting_flag;
 	ult_func func;
 	//fill this struct with statusinformations
 	stack_t	stack;	//stack for local vars

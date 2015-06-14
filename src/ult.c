@@ -11,6 +11,7 @@
 #define MAX_TCB 10
 #define DEBUG 0
 #define THREAD_IS_ALIVE 1337
+#define IS_WAITING 9000
 
 /* 
  * for use in vim:
@@ -177,6 +178,16 @@ int ult_waitpid(int tid, int *status) {
 	
 	// wenn ich hier hinkomme so wurde das Element nicht gefunden
 	
+	waiting_list *element;
+	element = malloc(sizeof(waiting_list));
+	element->waiting_tcb = tlist->tcb; // der wartende tcb lauft ja gerade also kopieren wir einen Pointer hier hin.
+	element->wait_of_thread = tid; //speicher ich hier die Adresse oder die Zahl ??
+	element->next_wait = wlist; // appende die liste
+	wlist = element;
+	
+	tlist->tcb->waiting_flag = IS_WAITING;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
+	
+	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
 	
 	
 	return -1;	//return 'error'
