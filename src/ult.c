@@ -76,8 +76,16 @@ int ult_spawn(ult_func f) {
 	/* intialize the tcb_list entry*/
 	printf("1. malloc\n");	
 	tcb_list* tcb= malloc(sizeof(tcb_list));
+	if (tcb == 0){
+		printf("tcb allocate not GOOOD");
+		exit(-1);
+	}
 	printf("2. malloc\n");	
 	tcb->tcb = malloc(sizeof(tcb));
+	if (tcb->tcb == 0){
+		printf("tcb->tcb allocate not  goood");
+		exit(-1);
+	}
 	printf("denfine next\n");	
 	tcb->next = tlist;
 	printf("denfine tlist\n");	
