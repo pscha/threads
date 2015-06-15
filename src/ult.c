@@ -81,6 +81,8 @@ void tcb_makecontext(tcb *t){
  fortgesetzt, um die Erzeugung mehrerer Threads zu ermoeglichen.
  */
 int ult_spawn(ult_func f) {	
+	tcb_list* tmp = tlist;
+	printf("%p\t tlist 1\n",tlist);
 	/* intialize the tcb_list entry*/
 	printf("1. malloc\n");	
 	tcb_list* tcb= malloc(sizeof(tcb_list));
@@ -109,6 +111,15 @@ int ult_spawn(ult_func f) {
 	// noch thread ID setzen einf�gen
 	
 	printf("end of spawn\n");
+	if(tmp){
+		tmp->next = tlist;
+		tlist->next = tmp->next;
+		tlist=tmp;
+	}
+	else{
+		tlist = tcb;
+	}
+	printf("%p\t tlist 2\n",tlist);
 	
 
 	return 0;		
@@ -123,6 +134,7 @@ int ult_spawn(ult_func f) {
 void ult_yield() {
 	printf("in yield\nSpringe von:");
 	tcb_contextprint();
+	printf("tlist_tcb: 	%p\n",tlist->tcb);
 	tcb_swapcontext(tlist->tcb,scheduler_tcb);
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
@@ -254,8 +266,8 @@ void ult_init(ult_func f) {
 
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_array[0] hat also Valide werrte
 
+	printf("before swap\n");
 	tcb_swapcontext(scheduler_tcb,tlist->tcb); // f�hre thread "my init" aus und starte den Sheduler
-
 	/* make tlist a circular list */
 	tmp_tlist = tlist;
 	// go to last element in tlist
@@ -271,6 +283,7 @@ void ult_init(ult_func f) {
 
 	/* scheduling method: always run the next one */
 	while(tlist){
+		printf("\t\tswap context\n");
 		tcb_swapcontext(scheduler_tcb, tlist->tcb); // scheduler_tcb repr�sentiert unseren Main Thread
 		// hier m�ssen instruktionen hin damit der sheduler korrekt weiterarbeitet. der n�chste Tcb wird dann im folgenden Schleifendurchlauf aufgerufen.
 		
@@ -288,7 +301,7 @@ void ult_init(ult_func f) {
 
 		tmp_zlist = zlist;
 		tmp_wlist = wlist;
-
+		tmp_tlist = tlist;
 		while(wlist){
 			while(zlist){
 				if(wlist->tcb->Wait_ID == zlist->tcb->Thread_ID){
