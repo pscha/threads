@@ -14,6 +14,7 @@
 struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_array[MAX_TCB];
+int idmarker = 20;
 
 tcb_list* tlist;  // first TCB  AkA  current_tcb
 tcb_list* zlist; // last element in Zombie-queue
@@ -33,7 +34,7 @@ void signalHandlerSpawn( int arg )
 	tcb_contextprint();
 	printf("tcb:%p\n",tlist);	
 	if (setjmp(tlist->tcb->env)){
-		tlist->tcb->func(); // hier funktion ausf�hren in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
+		tlist->tcb->func(); // hier funktion ausfuehren in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
 	}
 
 }
@@ -88,6 +89,8 @@ int ult_spawn(ult_func f) {
 	tcb->next = tlist;
 	printf("denfine tlist\n");	
 	tlist = tcb;
+	tlist->tcb->Thread_ID = idmarker;
+	idmarker++; // id count up
 		
 	printf("denfine execute function\n");	
 	/* make the thread do something */
