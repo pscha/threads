@@ -167,15 +167,17 @@ void ult_exit(int status) {
  Thread die CPU erhaelt).
  */
 int ult_waitpid(int tid, int *status) {
-	while(zlist->nextzombie != NULL){
-		if(zlist->thread_id == tid){
-			*status = zlist->status;
-			return(0);
-		}
-		zlist= zlist->nextzombie;
-	}	
-	ult_yield();
-	
+	while(1){
+		printf("in waitpis\n");
+		while(zlist->nextzombie != NULL){
+			if(zlist->thread_id == tid){
+				*status = zlist->status;
+				return(0);
+			}
+			zlist= zlist->nextzombie;
+		}	
+		ult_yield();
+	}
 	return -1;	//return 'error'
 }
 
@@ -274,6 +276,7 @@ void ult_init(ult_func f) {
 			tlist->next = tlist->next->next;
 			tmp_zlist = malloc(sizeof(zombie_list));
 			tmp_zlist->thread_id = tmp_tlist->tcb->Thread_ID;
+			tmp_zlist->status = tmp_tlist->tcb->zombie_flag;
 			tmp_zlist->nextzombie = zlist;
 			zlist=tmp_zlist;
 			printf("free tmp_tlist\n");
