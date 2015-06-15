@@ -167,11 +167,13 @@ void ult_exit(int status) {
  */
 int ult_waitpid(int tid, int *status) {
 	/*
-	 * TODO: hier muss eine �berpr�fung der Zombielemente vorgenommen werden, wenn das Element ein zombie ist, so returne den exit-status
-	 * Wenn jedoch das Element NICHT in der Zlist zu finden ist so erstelle ein Waiting-element und f�rlle eine Waiting-list danach f�hre ein 
+	 * TODO: hier muss eine ueberpruefung der Zombielemente vorgenommen werden, wenn das Element ein zombie ist, so returne den exit-status
+	 * Wenn jedoch das Element NICHT in der Zlist zu finden ist so erstelle ein Waiting-element und fuelle eine Waiting-list danach fuehre ein 
 	 * yield aus, 
 	 */
 	 tcb_list *zombie;
+	 tcb_list *prev_element;
+	 tcb_list *tmp_wlist;
 	 zombie = zlist; //damit wir den zlistpointer nicht veraendern
 	 
 	 while (zombie != NULL){ // exestieren zombies dann...
@@ -187,7 +189,44 @@ int ult_waitpid(int tid, int *status) {
 	
 	tlist->tcb->Wait_ID = tid;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
 	
+	
+	// close the cycle
+	prev_element = tlist;
+	while (1){
+		prev_element = prev_element->next; // itrieren
+		if(prev_element->next == tlist){
+			prev_element->next = tlist->next;
+			break;
+		}
+	}
+	
+	tmp_wlist = tlist;
+	if (wlist != NULL){
+		// wliste ist nicht leere also müssen wir das Element an das letzte element kleben:
+		while(wlist->next){
+			wlist = wlist->next; // iteriere
+		}
+		wlist->next = tlist; // an des letzte element wurde die tlist rangehangen
+	}else{
+		wlist = tlist;
+	}
+	wlist = tmp_wlist;
+	
+	// wlist hat nun ein Element welches auf das Element zeigt was auch auf prev_element zeigt. 
+	
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
+	// sind wiedergekommen! 
+	
+	
+	
+	while (zombie != NULL){ // exestieren zombies dann...
+		 if(tid == zombie->tcb->Thread_ID){ // wenn gesuchte ID gefunden wurde dann...
+			 status= &zombie->tcb->status;  
+			 return 0; // ich returne null weil alles gut funktioniert hat, wir muessen das Interface einhalten daher den status NICHT returnen
+		 }
+		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->tcb->status);
+		 zombie = zombie->next; // itterieren der Zombieliste
+	 }
 	
 	
 	
@@ -241,6 +280,7 @@ void ult_init(ult_func f) {
 	tcb_list* tmp_tlist;
 	tcb_list* tmp_zlist;
 	tcb_list* tmp_wlist;
+	tcb_list* prev_element;
 	int i;
 	zlist = NULL; // wir haben noch keine Zombies
 	wlist = NULL; // waiting_list f�r sp�ter
@@ -272,19 +312,10 @@ void ult_init(ult_func f) {
 	while(tlist){
 		tcb_swapcontext(scheduler_tcb, tlist->tcb); // scheduler_tcb repr�sentiert unseren Main Thread
 		// hier m�ssen instruktionen hin damit der sheduler korrekt weiterarbeitet. der n�chste Tcb wird dann im folgenden Schleifendurchlauf aufgerufen.
+		//--------------------------------------------------------------
+		// Waiting-list bereinigen!
 		
-		/*
-		 * TODO: ACHTUNG ABSOLUT WICHTIG !!!!!!!!!!!!!!!!!!!
-		 * tlist muss IMMER auf den tcb zeigen in dem Kontext wir uns befinden, der Thread muss darauf achten!
-		 */
-		
-			 
-		 /*
-		  * TODO: Wenn sich in der Zombieliste etwas befindet, so wird in der Waiting-list nachgeschaut... wenn die Threadids identisch sind, so kehre
-		  * in den hinterlegten tcb zur�ck welcher in einem Waiting-struct gespechertn worden ist, au�erdem l�sche das Zombie-element, dann ist jeglicher hinweis
-		  * auf das Leben des Thread vernichtet worden.
-		  */
-
+		//--------------------------------------------------------------
 		tmp_zlist = zlist;
 		tmp_wlist = wlist;
 
@@ -305,7 +336,14 @@ void ult_init(ult_func f) {
 		
 		wlist = tmp_wlist;
 		zlist = tmp_zlist;
-
+		
+		if (tlist->tcb->Wait_ID){
+			tlist->next = NULL;
+			tlist = prev_element->next; // sonderbahndlung fuer waiting threads
+		}else{
+			prev_element = tlist;
+			tlist = tlist->next;
+		}
 		tlist = tlist->next;
 	}
 
