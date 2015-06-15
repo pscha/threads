@@ -11,7 +11,7 @@ typedef void (*ult_func)();
 typedef struct tcb {
 	jmp_buf env; // register und alles wird gespeichert
 	int Thread_ID; // id des Threads
-	int zombie_flag;
+	int status;
 	int Wait_ID;
 	ult_func func;
 	//fill this struct with statusinformations
