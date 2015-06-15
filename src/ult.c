@@ -93,6 +93,7 @@ int ult_spawn(ult_func f) {
 	printf("denfine tlist\n");	
 	tlist = tcb;
 	tlist->tcb->Thread_ID = idmarker;
+	printf("%p  der jmp_buff von dem Thread \n", tlist->tcb->env);
 	idmarker++; // id count up
 		
 	printf("denfine execute function\n");	
@@ -122,7 +123,7 @@ int ult_spawn(ult_func f) {
 	printf("%p\t tlist 2\n",tlist);
 	
 
-	return 0;		
+	return tcb->tcb->Thread_ID;		
 }
 
 
@@ -134,7 +135,8 @@ int ult_spawn(ult_func f) {
 void ult_yield() {
 	printf("in yield\nSpringe von:");
 	tcb_contextprint();
-	printf("tlist_tcb: 	%p\n",tlist->tcb);
+	printf("tlist_tcb: %d	%p\n",tlist->tcb->Thread_ID ,tlist->tcb);
+	printf("tlist_tcb: %d	%p\n",scheduler_tcb->Thread_ID ,scheduler_tcb);
 	tcb_swapcontext(tlist->tcb,scheduler_tcb);
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
@@ -189,6 +191,8 @@ int ult_waitpid(int tid, int *status) {
 	 tcb_list *tmp_wlist;
 	 zombie = zlist; //damit wir den zlistpointer nicht veraendern
 	 
+	 
+	 
 	 while (zombie != NULL){ // exestieren zombies dann...
 		 if(tid == zombie->tcb->Thread_ID){ // wenn gesuchte ID gefunden wurde dann...
 			 status= &zombie->tcb->status;  
@@ -197,7 +201,7 @@ int ult_waitpid(int tid, int *status) {
 		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->tcb->status);
 		 zombie = zombie->next; // itterieren der Zombieliste
 	 }
-	
+	printf("keine Z gefunden\n");
 	// wenn ich hier hinkomme so wurde das Element nicht gefunden
 	
 	tlist->tcb->Wait_ID = tid;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
@@ -207,11 +211,13 @@ int ult_waitpid(int tid, int *status) {
 	prev_element = tlist;
 	while (1){
 		prev_element = prev_element->next; // itrieren
-		if(prev_element->next == tlist){
-			prev_element->next = tlist->next;
+		if(prev_element->next == tlist->next){
+			prev_element->next = tlist->next->next;
 			break;
 		}
 	}
+	
+	printf("cycle geschlossen\n");
 	
 	tmp_wlist = tlist;
 	if (wlist != NULL){
@@ -222,10 +228,13 @@ int ult_waitpid(int tid, int *status) {
 		wlist->next = tlist; // an des letzte element wurde die tlist rangehangen
 	}else{
 		wlist = tlist;
+		printf("element angefuegt\n");
 	}
 	wlist = tmp_wlist;
 	
 	// wlist hat nun ein Element welches auf das Element zeigt was auch auf prev_element zeigt. 
+	
+	
 	
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
 	// sind wiedergekommen! 
@@ -303,8 +312,10 @@ void ult_init(ult_func f) {
 		tcb_array[i] = malloc(sizeof(tcb));
 		tcb_array[i]->Thread_ID= i; // gleich ID zuweisung
 	}
-
+	
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_array[0] hat also Valide werrte
+	
+	printf("%p  der jmp_buff von scheduler\n", scheduler_tcb->env);
 
 	printf("before swap\n");
 	tcb_swapcontext(scheduler_tcb,tlist->tcb); // f�hre thread "my init" aus und starte den Sheduler
@@ -320,7 +331,8 @@ void ult_init(ult_func f) {
 
 	/* tmp_tlist ain't needed anymore */
 	tmp_tlist = NULL;
-
+	tlist = tlist->next;
+	printf("erster Thread vom scheduler %d\n",tlist->tcb->Thread_ID);
 	/* scheduling method: always run the next one */
 	while(tlist){
 		printf("\t\tswap context\n");

@@ -24,7 +24,7 @@ int tcb_contextprint(){
  */
 int tcb_getcontext(tcb *t){
 	if (setjmp(t->env)){ // speichert die Umgebungsvar in den jmp_buf des zugewiesenen TCB 
-		printf("Thread %d wird weiter bearbeitet",t->Thread_ID);
+		printf("Thread %d wird weiter in tcb %p bearbeitet\n",t->Thread_ID, t);
 		tcb_contextprint();
 		return 1; // wenn wir hier wieder kommen signalisieren wir das mit einer 1
 	}
@@ -37,6 +37,7 @@ int tcb_getcontext(tcb *t){
  * der IP neu gesetzt wird
  */
 int tcb_setcontext(tcb *t){
+	printf("ich springe nun nach : %p", t);
 	longjmp(t->env,1); // ?? ob das klappt?   
 	// nach dem Longjmp werden ja alle Pointer und Register geladen und es geht innerhalb des Threads weiter
 	// das return wird nicht erreicht, da nach dem Longjmp das
