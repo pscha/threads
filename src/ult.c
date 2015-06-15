@@ -7,6 +7,7 @@
 #include <signal.h>
 #include "ult.h"
 #include "tcb.h"
+#include <errno.h>
 
 #define MAX_TCB 10
 #define DEBUG 0
@@ -42,6 +43,10 @@ void tcb_makecontext(tcb *t){
 	printf("\tStackpointer:%p\n",&t->stack);	
 	printf("\tsapointer:%p\n",sa);	
 	// Create the new stack
+	
+	struct sigaction current_sa;
+	stack_t current_stack;
+	
 	t->stack.ss_flags = 0;
 	t->stack.ss_size = STACKSIZE;
 	t->stack.ss_sp = malloc(STACKSIZE);
@@ -49,17 +54,28 @@ void tcb_makecontext(tcb *t){
 		perror( "Could not allocate stack." );
 		exit( 1 );
 	}
-	sigaltstack( &t->stack, 0 );
+	if( sigaltstack( &t->stack, &current_stack)){
+		if (errno == EPERM){
+			printf("buhuhuhhu");
+		}
+		printf("sigaltstaclERROOOOOOOOORRRRR");
+	};
 
 	// Set up the custom signal handler
 	sa->sa_handler = &signalHandlerSpawn;
 	sa->sa_flags = SA_ONSTACK;
 	sigemptyset( &sa->sa_mask );
-	sigaction( SIGUSR1, sa, 0 );
+	sigaction( SIGUSR1, sa, &current_sa );
 	
 	printf("\tStackpointerpinter:%p\n",t->stack.ss_sp);	
 	printf( "raise signal\n" );
 	raise( SIGUSR1 );
+	
+	// zurückstzen des Stacks
+	sigaltstack(&current_stack, 0);
+	sigaction(SIGUSR1, &current_sa, 0);
+	
+	
 }
 
 
@@ -111,12 +127,6 @@ int ult_spawn(ult_func f) {
 	tcb_makecontext(tcb->tcb); // hier wird dann der stack gesetzt, sodass ab hier der TCB block fertig sein m�sste
 		printf("spawn 2\n");
 		tcb_contextprint();
-	
-	// ab diesem Zeitpunkt befinden wir uns noch in dem Kontext in welcher die fkt ult_spawn aufgerufen wurde und haben einen voll funktions-
-	// t�chtigen TCB mit einer neuen Funktion erstellt.
-	
-	// noch thread ID setzen einf�gen
-	
 	printf("end of spawn\n");
 	printf("%p\t tlist 2\n",tlist);
 	
