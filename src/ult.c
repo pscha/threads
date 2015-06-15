@@ -41,7 +41,7 @@ void signalHandlerSpawn( int arg )
 
 void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
-	stack_t stack;
+
 	struct sigaction sa;
 	
 	// Create the new stack
@@ -130,38 +130,28 @@ void ult_yield() {
  zum Zombie und der Exit-Status wird abgespeichert.
  */
 void ult_exit(int status) {
+	tcb_list *prev_element;
+	tcb_list *zombie;
+	
 	tlist->tcb->status = status; // Exitcode wird gesetzt
 	
-	// baue Cykle
-	tcb_list *prev_element;
 	prev_element = tlist;
 	while (1){
+		prev_element = prev_element->next; // itrieren
 		if(prev_element->next == tlist){
 			prev_element->next = tlist->next;
 			break;
 		}
 	}
-	// tlist wurde aus dem circle entfernt haben es aber nocht in der hand.
+	// prev-element haelt nun das element vor tlist. 
 	
-	tcb_list *zombie;
-	zombie = tlist;
+	zombie = tlist; 
+	tlist = prev_element; // setzen von tlist neu auf das element vor tlist
 	
-	
-	if (zlist == NULL){
-		zlist = tlist; // element wird in die zombieliste gepackt.
-		zlist->next = NULL; 
-	}else{
-		zombie->next = zlist;
-		zlist = zombie;
-	}
+	zombie->next = zlist; // in die Zombiequeue einfuegen
+	zlist= zombie;
 	
 	
-	// Zombieelement Appenden
-	// zombie_list hat ein neuen Element
-	printf("free stackpointer\n");
-	tlist->tcb->stack.ss_sp = NULL;
-	printf("free tcb\n");
-
 	longjmp(scheduler_tcb->env,100); // springe zum sheduler 	
 }
 
