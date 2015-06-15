@@ -95,7 +95,7 @@ int ult_spawn(ult_func f) {
 	printf("denfine execute function\n");	
 	/* make the thread do something */
 	tcb->tcb->func = f; // schreibe func-pointer in den TCB ab hier sind Kontext und ausfphrung mitenander verbunden
-		printf("spawn 2\n");
+		printf("spawn 1\n");
 		tcb_contextprint();
 
 	tcb_makecontext(tcb->tcb); // hier wird dann der stack gesetzt, sodass ab hier der TCB block fertig sein müsste
@@ -191,6 +191,7 @@ int ult_waitpid(int tid, int *status) {
 	
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
 	
+
 	
 	return -1;	//return 'error'
 }
@@ -240,8 +241,9 @@ int ult_read(int fd, void *buf, int count) {
  */
 void ult_init(ult_func f) {
 	tcb_list* tmp_tlist;
+	tcb_list* tmp_zlist;
+	tcb_list* tmp_wlist;
 	int i;
-	zombie_list* tmp_zlist;
 	zlist = NULL; // wir haben noch keine Zombies
 	wlist = NULL; // waiting_list für später
 	scheduler_tcb = malloc(sizeof(tcb)); // hole speicher für tcbblock
@@ -278,31 +280,34 @@ void ult_init(ult_func f) {
 		 * tlist muss IMMER auf den tcb zeigen in dem Kontext wir uns befinden, der Thread muss darauf achten!
 		 */
 		
-		
-		/*
-		 *  TODO:  Wenn ein Zombieflag gesetzt ist so tue folgendes: Lösche den Thread aus der Running_queue 
-		 * 	
-		 */
-		
-		/* free the zombies */
-		 if(tlist->next->tcb == NULL){
-			tmp_tlist = tlist->next;
-			tlist->next = tlist->next->next;
-			tmp_zlist = malloc(sizeof(zombie_list));
-			tmp_zlist->thread_id = tmp_tlist->tcb->Thread_ID;
-			tmp_zlist->status = tmp_tlist->tcb->zombie_flag;
-			tmp_zlist->nextzombie = zlist;
-			zlist=tmp_zlist;
-			printf("free tmp_tlist\n");
-			free(tmp_tlist);
-			tmp_tlist = NULL;
-		}
 			 
 		 /*
 		  * TODO: Wenn sich in der Zombieliste etwas befindet, so wird in der Waiting-list nachgeschaut... wenn die Threadids identisch sind, so kehre
 		  * in den hinterlegten tcb zurück welcher in einem Waiting-struct gespechertn worden ist, außerdem lösche das Zombie-element, dann ist jeglicher hinweis
 		  * auf das Leben des Thread vernichtet worden.
 		  */
+
+		tmp_zlist = zlist;
+		tmp_wlist = wlist;
+
+		while(wlist){
+			while(zlist){
+				if(wlist->tcb->Wait_ID == zlist_Thread_ID){
+					wlist->next = tlist;
+					while(tlist->next != wlist->next){
+						tlist->next = tlist->next->next;
+					}
+					tlist->next = wlist; //close cycle
+					tlist->next = tlist->next->next;
+				}
+				zlist = zlist->next;
+			}
+			wlist = wlist->next;
+		}
+		
+		wlist = tmp_wlist;
+		zlist = tmp_zlist;
+
 		tlist = tlist->next;
 	}
 
