@@ -31,7 +31,7 @@ void signalHandlerSpawn( int arg )
 {	
 	printf("Signalhandler-aufruf Stackdaten:\n");
 	tcb_contextprint();
-	printf("tcb:%p\n",tlist);	
+	printf("tcb:%p\n",tlist->tcb);	
 	if (setjmp(tlist->tcb->env)){
 		tlist->tcb->func(); // hier funktion ausf�hren in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
 	}
@@ -40,9 +40,9 @@ void signalHandlerSpawn( int arg )
 
 void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
-	stack_t stack;
-	struct sigaction sa;
-	
+	struct sigaction* sa = malloc(sizeof(struct sigaction));
+	printf("\tStackpointer:%p\n",&t->stack);	
+	printf("\tsapointer:%p\n",sa);	
 	// Create the new stack
 	t->stack.ss_flags = 0;
 	t->stack.ss_size = STACKSIZE;
@@ -54,11 +54,12 @@ void tcb_makecontext(tcb *t){
 	sigaltstack( &t->stack, 0 );
 
 	// Set up the custom signal handler
-	sa.sa_handler = &signalHandlerSpawn;
-	sa.sa_flags = SA_ONSTACK;
-	sigemptyset( &sa.sa_mask );
-	sigaction( SIGUSR1, &sa, 0 );
-
+	sa->sa_handler = &signalHandlerSpawn;
+	sa->sa_flags = SA_ONSTACK;
+	sigemptyset( &sa->sa_mask );
+	sigaction( SIGUSR1, sa, 0 );
+	
+	printf("\tStackpointerpinter:%p\n",t->stack.ss_sp);	
 	printf( "raise signal\n" );
 	raise( SIGUSR1 );
 }
