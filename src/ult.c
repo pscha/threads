@@ -14,6 +14,7 @@
 struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_array[MAX_TCB];
+int idmarker = 20;
 
 tcb_list* tlist;  // first TCB  AkA  current_tcb
 tcb_list* zlist; // last element in Zombie-queue
@@ -33,7 +34,7 @@ void signalHandlerSpawn( int arg )
 	tcb_contextprint();
 	printf("tcb:%p\n",tlist->tcb);	
 	if (setjmp(tlist->tcb->env)){
-		tlist->tcb->func(); // hier funktion ausf�hren in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
+		tlist->tcb->func(); // hier funktion ausfuehren in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
 	}
 
 }
@@ -89,6 +90,8 @@ int ult_spawn(ult_func f) {
 	tcb->next = tlist;
 	printf("denfine tlist\n");	
 	tlist = tcb;
+	tlist->tcb->Thread_ID = idmarker;
+	idmarker++; // id count up
 		
 	printf("denfine execute function\n");	
 	/* make the thread do something */
@@ -128,38 +131,28 @@ void ult_yield() {
  zum Zombie und der Exit-Status wird abgespeichert.
  */
 void ult_exit(int status) {
+	tcb_list *prev_element;
+	tcb_list *zombie;
+	
 	tlist->tcb->status = status; // Exitcode wird gesetzt
 	
-	// baue Cykle
-	tcb_list *prev_element;
 	prev_element = tlist;
 	while (1){
+		prev_element = prev_element->next; // itrieren
 		if(prev_element->next == tlist){
 			prev_element->next = tlist->next;
 			break;
 		}
 	}
-	// tlist wurde aus dem circle entfernt haben es aber nocht in der hand.
+	// prev-element haelt nun das element vor tlist. 
 	
-	tcb_list *zombie;
-	zombie = tlist;
+	zombie = tlist; 
+	tlist = prev_element; // setzen von tlist neu auf das element vor tlist
 	
-	
-	if (zlist == NULL){
-		zlist = tlist; // element wird in die zombieliste gepackt.
-		zlist->next = NULL; 
-	}else{
-		zombie->next = zlist;
-		zlist = zombie;
-	}
+	zombie->next = zlist; // in die Zombiequeue einfuegen
+	zlist= zombie;
 	
 	
-	// Zombieelement Appenden
-	// zombie_list hat ein neuen Element
-	printf("free stackpointer\n");
-	tlist->tcb->stack.ss_sp = NULL;
-	printf("free tcb\n");
-
 	longjmp(scheduler_tcb->env,100); // springe zum sheduler 	
 }
 
