@@ -42,26 +42,27 @@ void signalHandlerSpawn( int arg )
 
 void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
-  struct sigaction sa;
-  
-  // Create the new stack
-  t->stack.ss_flags = 0;
-  t->stack.ss_size = STACKSIZE;
-  t->stack.ss_sp = malloc(STACKSIZE);
-  if ( t->stack.ss_sp == NULL ) {
-    perror( "Could not allocate stack." );
-    exit( 1 );
-  }
-  sigaltstack( &t->stack, 0 );
+	stack_t stack;
+	struct sigaction sa;
+	
+	// Create the new stack
+	t->stack.ss_flags = 0;
+	t->stack.ss_size = STACKSIZE;
+	t->stack.ss_sp = malloc(STACKSIZE);
+	if ( t->stack.ss_sp == NULL ) {
+		perror( "Could not allocate stack." );
+		exit( 1 );
+	}
+	sigaltstack( &t->stack, 0 );
 
-  // Set up the custom signal handler
-  sa.sa_handler = &signalHandlerSpawn;
-  sa.sa_flags = SA_ONSTACK;
-  sigemptyset( &sa.sa_mask );
-  sigaction( SIGUSR1, &sa, 0 );
+	// Set up the custom signal handler
+	sa.sa_handler = &signalHandlerSpawn;
+	sa.sa_flags = SA_ONSTACK;
+	sigemptyset( &sa.sa_mask );
+	sigaction( SIGUSR1, &sa, 0 );
 
-  printf( "raise signal\n" );
-  raise( SIGUSR1 );
+	printf( "raise signal\n" );
+	raise( SIGUSR1 );
 }
 
 /*
@@ -185,7 +186,7 @@ int ult_waitpid(int tid, int *status) {
 	element->next_wait = wlist; // appende die liste
 	wlist = element;
 	
-	tlist->tcb->waiting_flag = IS_WAITING;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
+	tlist->tcb->Wait_ID = IS_WAITING;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
 	
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
 	
@@ -288,7 +289,7 @@ void ult_init(ult_func f) {
 
 		while(wlist){
 			while(zlist){
-				if(wlist->tcb->Wait_ID == zlist_Thread_ID){
+				if(wlist->tcb->Wait_ID == zlist->tcb->Thread_ID){
 					wlist->next = tlist;
 					while(tlist->next != wlist->next){
 						tlist->next = tlist->next->next;
