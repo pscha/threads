@@ -42,6 +42,7 @@ void signalHandlerSpawn( int arg )
 {	
 	printf("Signalhandler-aufruf Stackdaten:\n");
 	tcb_contextprint();
+	printf("tcb:%p\n",tlist);	
 	if (setjmp(tlist->tcb->env)){
 		tlist->tcb->func(); // hier funktion ausführen in dem tcb in dem wir gerade sind :: wie auch immer das mit den Pointern geht
 	}
@@ -56,7 +57,7 @@ void tcb_makecontext(tcb *t){
   t->stack.ss_flags = 0;
   t->stack.ss_size = STACKSIZE;
   t->stack.ss_sp = malloc(STACKSIZE);
-  if ( t->stack.ss_sp == 0 ) {
+  if ( t->stack.ss_sp == NULL ) {
     perror( "Could not allocate stack." );
     exit( 1 );
   }
@@ -95,15 +96,18 @@ int ult_spawn(ult_func f) {
 	tcb->tcb = malloc(sizeof(tcb));
 	printf("denfine next\n");	
 	tcb->next = tlist;
-	
 	printf("denfine tlist\n");	
 	tlist = tcb;
 		
 	printf("denfine execute function\n");	
 	/* make the thread do something */
 	tcb->tcb->func = f; // schreibe func-pointer in den TCB ab hier sind Kontext und ausfphrung mitenander verbunden
+		printf("spawn 2\n");
+		tcb_contextprint();
 
 	tcb_makecontext(tcb->tcb); // hier wird dann der stack gesetzt, sodass ab hier der TCB block fertig sein müsste
+		printf("spawn 2\n");
+		tcb_contextprint();
 	
 	// ab diesem Zeitpunkt befinden wir uns noch in dem Kontext in welcher die fkt ult_spawn aufgerufen wurde und haben einen voll funktions-
 	// tüchtigen TCB mit einer neuen Funktion erstellt.
@@ -142,7 +146,10 @@ void ult_exit(int status) {
 	zombie.nextzombie = zlist; // Append an liste, wenn erstes Element dann = NULL
 	zlist = &zombie; 
 	// zombie_list hat ein neuen Element
+	printf("free stackpointer\n");
 	free(tlist->tcb->stack.ss_sp); // Free the Stack!
+	tlist->tcb->stack.ss_sp = NULL;
+	printf("free tcb\n");
 	free(tlist->tcb); // free the tcb der Thread exestiert nicht mehr alle Pointer und jmp_buf löschen
 	tlist->tcb = NULL; 
 	
@@ -161,6 +168,7 @@ void ult_exit(int status) {
  Thread die CPU erhaelt).
  */
 int ult_waitpid(int tid, int *status) {
+<<<<<<< HEAD
 	/*
 	 * TODO: hier muss eine Überprüfung der Zombielemente vorgenommen werden, wenn das Element ein zombie ist, so returne den exit-status
 	 * Wenn jedoch das Element NICHT in der Zlist zu finden ist so erstelle ein Waiting-element und fürlle eine Waiting-list danach führe ein 
@@ -192,6 +200,19 @@ int ult_waitpid(int tid, int *status) {
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
 	
 	
+=======
+	while(1){
+		printf("in waitpis\n");
+		while(zlist->nextzombie != NULL){
+			if(zlist->thread_id == tid){
+				*status = zlist->status;
+				return(0);
+			}
+			zlist= zlist->nextzombie;
+		}	
+		ult_yield();
+	}
+>>>>>>> scheduler
 	return -1;	//return 'error'
 }
 
@@ -289,9 +310,11 @@ void ult_init(ult_func f) {
 			tmp_tlist = tlist->next;
 			tlist->next = tlist->next->next;
 			tmp_zlist = malloc(sizeof(zombie_list));
-			tmp_zlist->Thread_ID = tmp_tlist->Thread_ID;
+			tmp_zlist->thread_id = tmp_tlist->tcb->Thread_ID;
+			tmp_zlist->status = tmp_tlist->tcb->zombie_flag;
 			tmp_zlist->nextzombie = zlist;
 			zlist=tmp_zlist;
+			printf("free tmp_tlist\n");
 			free(tmp_tlist);
 			tmp_tlist = NULL;
 		}
