@@ -11,23 +11,17 @@
 #define MAX_TCB 10
 #define DEBUG 0
 #define THREAD_IS_ALIVE 1337
+#define IS_WAITING 9000
 
-/* 
- * for use in vim:
- *
- * :%s/sheduler/scheduler/Ig
- * :%s/Sheduler/Scheduler/Ig
- *
- * :%s/next_TCB/next_tcb/Ig
- */
+
 
 struct timeval tv_str; // for read datatypes
 static fd_set fds;
 tcb* tcb_array[MAX_TCB];
 
 tcb_list* tlist;  // first TCB  AkA  current_tcb
-zombie_list* zlist; // last element in Zombie-queue
-waiting_list* wlist; // waiting-List 
+tcb_list* zlist; // last element in Zombie-queue
+tcb_list* wlist; // waiting-List 
 
 tcb* scheduler_tcb; // schedulerTCB  auch als Prozzess-TCB beaknnt braucht nur gespeichert zu werden
 
@@ -167,17 +161,37 @@ void ult_exit(int status) {
  Thread die CPU erhaelt).
  */
 int ult_waitpid(int tid, int *status) {
-	while(1){
-		printf("in waitpis\n");
-		while(zlist->nextzombie != NULL){
-			if(zlist->thread_id == tid){
-				*status = zlist->status;
-				return(0);
-			}
-			zlist= zlist->nextzombie;
-		}	
-		ult_yield();
-	}
+	/*
+	 * TODO: hier muss eine Überprüfung der Zombielemente vorgenommen werden, wenn das Element ein zombie ist, so returne den exit-status
+	 * Wenn jedoch das Element NICHT in der Zlist zu finden ist so erstelle ein Waiting-element und fürlle eine Waiting-list danach führe ein 
+	 * yield aus, 
+	 */
+	 zombie_list *zombie;
+	 zombie = zlist; //damit wir den zlistpointer nicht verändern
+	 
+	 while (zombie != NULL){ // exestieren zombies dann...
+		 if(tid == zombie->thread_id){ // wenn gesuchte ID gefunden wurde dann...
+			 status= &zombie->status; // nur existent wenn das Zombieelement exestiert ?!?!!!??!?!???? 
+			 return 0; // ich returne null weil alles gut funktioniert hat, wir muessen das Interface einhalten daher den status NICHT returnen
+		 }
+		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->status);
+		 zombie = zombie->nextzombie; // itterieren der Zombieliste
+	 }
+	
+	// wenn ich hier hinkomme so wurde das Element nicht gefunden
+	
+	waiting_list *element;
+	element = malloc(sizeof(waiting_list));
+	element->waiting_tcb = tlist->tcb; // der wartende tcb lauft ja gerade also kopieren wir einen Pointer hier hin.
+	element->wait_of_thread = tid; //speicher ich hier die Adresse oder die Zahl ??
+	element->next_wait = wlist; // appende die liste
+	wlist = element;
+	
+	tlist->tcb->waiting_flag = IS_WAITING;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
+	
+	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
+	
+	
 	return -1;	//return 'error'
 }
 
