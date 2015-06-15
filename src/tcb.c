@@ -37,7 +37,8 @@ int tcb_getcontext(tcb *t){
  * der IP neu gesetzt wird
  */
 int tcb_setcontext(tcb *t){
-	printf("ich springe nun nach : %p", t);
+	printf("ich springe nun nach : %p\n", t);
+	fflush(stdout);
 	longjmp(t->env,1); // ?? ob das klappt?   
 	// nach dem Longjmp werden ja alle Pointer und Register geladen und es geht innerhalb des Threads weiter
 	// das return wird nicht erreicht, da nach dem Longjmp das

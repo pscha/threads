@@ -52,7 +52,7 @@ void threadB()
 		{
 			printf("time = %f\nbytes = %li\n",difftime(time(NULL) ,start_time),copyed_bytes);
 		}
-		free(in);
+		 //free(in);
 		ult_yield();
 	}
 	ult_exit(0);
@@ -81,6 +81,7 @@ int main()
 {
     printf("starting myInit\n"); fflush(stdout);
     ult_init(myInit);
+    //ult_init(threadB);
     exit(0);
 }
 

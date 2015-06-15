@@ -1,3 +1,7 @@
+#ifdef _FORTIFY_SOURCE
+    # undef _FORTIFY_SOURCE
+    #endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -28,7 +32,6 @@ tcb* scheduler_tcb; // schedulerTCB  auch als Prozzess-TCB beaknnt braucht nur g
  */
 void signalHandlerSpawn( int arg )
 {	
-	printf("Signalhandler-aufruf Stackdaten:\n");
 	tcb_contextprint();
 	printf("tcb:%p\n",tlist->tcb);	
 	if (setjmp(tlist->tcb->env)){
@@ -40,8 +43,6 @@ void signalHandlerSpawn( int arg )
 void tcb_makecontext(tcb *t){
 	// malloc der stacksize zum erzeugen des Stacks
 	struct sigaction* sa = malloc(sizeof(struct sigaction));
-	printf("\tStackpointer:%p\n",&t->stack);	
-	printf("\tsapointer:%p\n",sa);	
 	// Create the new stack
 	
 	struct sigaction current_sa;
@@ -56,9 +57,9 @@ void tcb_makecontext(tcb *t){
 	}
 	if( sigaltstack( &t->stack, &current_stack)){
 		if (errno == EPERM){
-			printf("buhuhuhhu");
+			printf("EPERM-Error");
 		}
-		printf("sigaltstaclERROOOOOOOOORRRRR");
+		printf("sigaltstaclERROR");
 	};
 
 	// Set up the custom signal handler
@@ -67,7 +68,6 @@ void tcb_makecontext(tcb *t){
 	sigemptyset( &sa->sa_mask );
 	sigaction( SIGUSR1, sa, &current_sa );
 	
-	printf("\tStackpointerpinter:%p\n",t->stack.ss_sp);	
 	printf( "raise signal\n" );
 	raise( SIGUSR1 );
 	
@@ -88,23 +88,22 @@ void tcb_makecontext(tcb *t){
  */
 int ult_spawn(ult_func f) {	
 	tcb_list* tmp = tlist;
-	printf("%p\t tlist 1\n",tlist);
 	/* intialize the tcb_list entry*/
-	printf("1. malloc\n");	
+	//printf("1. malloc\n");	
 	tcb_list* tcb= malloc(sizeof(tcb_list));
 	if (tcb == 0){
-		printf("tcb allocate not GOOOD");
+		printf("tcb allocate failed");
 		exit(-1);
 	}
-	printf("2. malloc\n");	
+	//printf("2. malloc\n");	
 	tcb->tcb = malloc(sizeof(tcb));
 	if (tcb->tcb == 0){
-		printf("tcb->tcb allocate not  goood");
+		printf("tcb->tcb allocate failed");
 		exit(-1);
 	}
-	printf("denfine next\n");	
+	//printf("denfine next\n");	
 	tcb->next = tlist;
-	printf("denfine tlist\n");	
+	//printf("denfine tlist\n");	
 	tlist = tcb;
 	tlist->tcb->Thread_ID = idmarker;
 	printf("%p  der jmp_buff von dem Thread \n", tlist->tcb->env);
@@ -118,17 +117,16 @@ int ult_spawn(ult_func f) {
 	else{
 		tlist = tcb;
 	}
-	printf("denfine execute function\n");	
+	//printf("denfine execute function\n");	
 	/* make the thread do something */
 	tcb->tcb->func = f; // schreibe func-pointer in den TCB ab hier sind Kontext und ausfphrung mitenander verbunden
-		printf("spawn 1\n");
+		//printf("spawn 1\n");
 		tcb_contextprint();
 
 	tcb_makecontext(tcb->tcb); // hier wird dann der stack gesetzt, sodass ab hier der TCB block fertig sein m�sste
-		printf("spawn 2\n");
+		//printf("spawn 2\n");
 		tcb_contextprint();
 	printf("end of spawn\n");
-	printf("%p\t tlist 2\n",tlist);
 	
 
 	return tcb->tcb->Thread_ID;		
@@ -142,9 +140,6 @@ int ult_spawn(ult_func f) {
  */
 void ult_yield() {
 	printf("in yield\nSpringe von:");
-	tcb_contextprint();
-	printf("tlist_tcb: %d	%p\n",tlist->tcb->Thread_ID ,tlist->tcb);
-	printf("tlist_tcb: %d	%p\n",scheduler_tcb->Thread_ID ,scheduler_tcb);
 	tcb_swapcontext(tlist->tcb,scheduler_tcb);
 	// hier gehts dann weiter, wenn der Thread wieder aufgerufen wird.
 }
@@ -209,7 +204,6 @@ int ult_waitpid(int tid, int *status) {
 		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->tcb->status);
 		 zombie = zombie->next; // itterieren der Zombieliste
 	 }
-	printf("keine Z gefunden\n");
 	// wenn ich hier hinkomme so wurde das Element nicht gefunden
 	
 	tlist->tcb->Wait_ID = tid;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
@@ -225,7 +219,6 @@ int ult_waitpid(int tid, int *status) {
 		}
 	}
 	
-	printf("cycle geschlossen\n");
 	
 	tmp_wlist = tlist;
 	if (wlist != NULL){
@@ -319,7 +312,7 @@ void ult_init(ult_func f) {
 	
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_array[0] hat also Valide werrte
 	
-	printf("%p  der jmp_buff von scheduler\n", scheduler_tcb->env);
+	//printf("%p  der jmp_buff von scheduler\n", scheduler_tcb->env);
 
 	printf("before swap\n");fflush(stdout);
 	tcb_swapcontext(scheduler_tcb,tlist->tcb); // f�hre thread "my init" aus und starte den Sheduler
@@ -345,9 +338,11 @@ void ult_init(ult_func f) {
 	/* tmp_tlist ain't needed anymore */
 //	tmp_tlist = NULL;
 	tlist = tlist->next;
+	if (tlist== 0){printf("fail\n");}
+	printf("%p\n",tlist->tcb);
 	printf("erster Thread vom scheduler %d\n",tlist->tcb->Thread_ID);
 	
-	
+	longjmp(tlist->tcb->env,100);
 	/*
 	 * Scheduler
 	 */
