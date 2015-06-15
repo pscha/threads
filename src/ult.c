@@ -130,20 +130,18 @@ void ult_exit(int status) {
 	
 	// baue Cykle
 	tcb_list *prev_element;
-	prev_element = tlist
-	while (){
+	prev_element = tlist;
+	while (1){
 		if(prev_element->next == tlist){
 			prev_element->next = tlist->next;
 			break;
 		}
 	}
 	// tlist wurde aus dem circle entfernt haben es aber nocht in der hand.
-	tlist = 
 	
 	tcb_list *zombie;
 	zombie = tlist;
 	
-	zombie
 	
 	if (zlist == NULL){
 		zlist = tlist; // element wird in die zombieliste gepackt.
@@ -179,28 +177,21 @@ int ult_waitpid(int tid, int *status) {
 	 * Wenn jedoch das Element NICHT in der Zlist zu finden ist so erstelle ein Waiting-element und f�rlle eine Waiting-list danach f�hre ein 
 	 * yield aus, 
 	 */
-	 zombie_list *zombie;
-	 zombie = zlist; //damit wir den zlistpointer nicht ver�ndern
+	 tcb_list *zombie;
+	 zombie = zlist; //damit wir den zlistpointer nicht veraendern
 	 
 	 while (zombie != NULL){ // exestieren zombies dann...
 		 if(tid == zombie->tcb->Thread_ID){ // wenn gesuchte ID gefunden wurde dann...
 			 status= &zombie->tcb->status;  
 			 return 0; // ich returne null weil alles gut funktioniert hat, wir muessen das Interface einhalten daher den status NICHT returnen
 		 }
-		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->status);
-		 zombie = zombie->nextzombie; // itterieren der Zombieliste
+		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->tcb->status);
+		 zombie = zombie->next; // itterieren der Zombieliste
 	 }
 	
 	// wenn ich hier hinkomme so wurde das Element nicht gefunden
 	
-	waiting_list *element;
-	element = malloc(sizeof(waiting_list));
-	element->waiting_tcb = tlist->tcb; // der wartende tcb lauft ja gerade also kopieren wir einen Pointer hier hin.
-	element->wait_of_thread = tid; //speicher ich hier die Adresse oder die Zahl ??
-	element->next_wait = wlist; // appende die liste
-	wlist = element;
-	
-	tlist->tcb->waiting_flag = IS_WAITING;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
+	tlist->tcb->Wait_ID = tid;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
 	
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
 	
@@ -305,7 +296,7 @@ void ult_init(ult_func f) {
 
 		while(wlist){
 			while(zlist){
-				if(wlist->tcb->Wait_ID == zlist_Thread_ID){
+				if(wlist->tcb->Wait_ID == zlist->tcb->Thread_ID){
 					wlist->next = tlist;
 					while(tlist->next != wlist->next){
 						tlist->next = tlist->next->next;
