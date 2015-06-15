@@ -5,7 +5,7 @@
 #include <time.h>
 #include "ult.h"
 
-int end_copying;
+int end_copying = 0;
 long copyed_bytes = 0;
 time_t start_time;
 

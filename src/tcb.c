@@ -53,6 +53,7 @@ int tcb_setcontext(tcb *t){
  * 
  */
 int tcb_swapcontext(tcb *ourTcb, tcb *newTcb){
+	printf("\t\t\t\tEnter Swapcontext with ourTcb:%i and newTcb:%i\n",ourTcb->Thread_ID, newTcb->Thread_ID);
 	if  (!tcb_getcontext(ourTcb)){ //
 		tcb_setcontext(newTcb);
 	}
