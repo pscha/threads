@@ -10,8 +10,6 @@
 
 #define MAX_TCB 10
 #define DEBUG 0
-#define THREAD_IS_ALIVE 1337
-#define IS_WAITING 9000
 
 /* 
  * for use in vim:
@@ -133,19 +131,36 @@ void ult_yield() {
  zum Zombie und der Exit-Status wird abgespeichert.
  */
 void ult_exit(int status) {
-	tlist->tcb->zombie_flag = status; // zombieflag wird gesetzt
+	tlist->tcb->status = status; // Exitcode wird gesetzt
+	
+	// baue Cykle
+	tcb_list *prev_element;
+	prev_element = tlist
+	while (){
+		if(prev_element->next == tlist){
+			prev_element->next = tlist->next;
+			break;
+		}
+	}
+	// tlist wurde aus dem circle entfernt haben es aber nocht in der hand.
+	tlist = 
+	
+	tcb_list *zombie;
+	zombie = tlist;
+	
+	zombie
+	
+	if (zlist == NULL){
+		zlist = tlist; // element wird in die zombieliste gepackt.
+		zlist->next = NULL; 
+	}else{
+		zombie->next = zlist;
+		zlist = zombie;
+	}
+	
 	
 	// Zombieelement Appenden
-	zombie_list zombie; 
-	zombie.thread_id= tlist->tcb->Thread_ID; // Thread ID wurde zum Zombie
-	zombie.status = status; // setze exit_status
-	zombie.nextzombie = zlist; // Append an liste, wenn erstes Element dann = NULL
-	zlist = &zombie; 
 	// zombie_list hat ein neuen Element
-	free(tlist->tcb->stack.ss_sp); // Free the Stack!
-	free(tlist->tcb); // free the tcb der Thread exestiert nicht mehr alle Pointer und jmp_buf löschen
-	tlist->tcb = NULL; 
-	
 
 	longjmp(scheduler_tcb->env,100); // springe zum sheduler 	
 }
@@ -170,8 +185,8 @@ int ult_waitpid(int tid, int *status) {
 	 zombie = zlist; //damit wir den zlistpointer nicht verändern
 	 
 	 while (zombie != NULL){ // exestieren zombies dann...
-		 if(tid == zombie->thread_id){ // wenn gesuchte ID gefunden wurde dann...
-			 status= &zombie->status; // nur existent wenn das Zombieelement exestiert ?!?!!!??!?!???? 
+		 if(tid == zombie->tcb->Thread_ID){ // wenn gesuchte ID gefunden wurde dann...
+			 status= &zombie->tcb->status;  
 			 return 0; // ich returne null weil alles gut funktioniert hat, wir muessen das Interface einhalten daher den status NICHT returnen
 		 }
 		 printf("ult_waitpid wartet auf %d - findet in Zombie_list: %d ", tid, zombie->status);
@@ -190,6 +205,8 @@ int ult_waitpid(int tid, int *status) {
 	tlist->tcb->waiting_flag = IS_WAITING;  // setzt das Flag das markiert, das der Thread in die Waitingquee verschoben wurde
 	
 	ult_yield(); // danach springe zum sheduler und komm erst wieder, wenn 
+	
+	
 	
 	
 	return -1;	//return 'error'
