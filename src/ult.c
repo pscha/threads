@@ -16,14 +16,11 @@ static fd_set fds;
 tcb* tcb_array[MAX_TCB];
 int idmarker = 20;
 
-tcb_list* tlist;  // first TCB  AkA  current_tcb
-tcb_list* zlist; // last element in Zombie-queue
-tcb_list* wlist; // waiting-List 
+tcb_list* tlist = NULL;  // first TCB  AkA  current_tcb
+tcb_list* zlist = NULL; // last element in Zombie-queue
+tcb_list* wlist = NULL; // waiting-List 
 
 tcb* scheduler_tcb; // schedulerTCB  auch als Prozzess-TCB beaknnt braucht nur gespeichert zu werden
-
-jmp_buf sheduler;
-	
 
 /*
  This function only exists to tell the process to use an empty stack for the thread
@@ -65,13 +62,6 @@ void tcb_makecontext(tcb *t){
 	raise( SIGUSR1 );
 }
 
-/*
- * ---------------------------------------------------------------------------------------------------------------
- * ---------------------------------------------------------------------------------------------------------------
- * ---------------------------------------------------------------------------------------------------------------
- * ---------------------------------------------------------------------------------------------------------------
- */
-
 
 // spawn a new thread, return its ID 
 /*	Die Funktion ult_spawn() erzeugt einen Thread-Control-Block (TCB) fuer
@@ -96,6 +86,14 @@ int ult_spawn(ult_func f) {
 	printf("%p  der jmp_buff von dem Thread \n", tlist->tcb->env);
 	idmarker++; // id count up
 		
+	if(tmp){
+		tmp->next = tlist;
+		tlist->next = tmp->next;
+		tlist=tmp;
+	}
+	else{
+		tlist = tcb;
+	}
 	printf("denfine execute function\n");	
 	/* make the thread do something */
 	tcb->tcb->func = f; // schreibe func-pointer in den TCB ab hier sind Kontext und ausfphrung mitenander verbunden
@@ -112,14 +110,6 @@ int ult_spawn(ult_func f) {
 	// noch thread ID setzen einf�gen
 	
 	printf("end of spawn\n");
-	if(tmp){
-		tmp->next = tlist;
-		tlist->next = tmp->next;
-		tlist=tmp;
-	}
-	else{
-		tlist = tcb;
-	}
 	printf("%p\t tlist 2\n",tlist);
 	
 
@@ -299,40 +289,51 @@ int ult_read(int fd, void *buf, int count) {
  ult_waitpid() auf das Ende aller Threads wartet. 
  */
 void ult_init(ult_func f) {
-	tcb_list* tmp_tlist;
 	tcb_list* tmp_zlist;
 	tcb_list* tmp_wlist;
 	tcb_list* prev_element;
-	int i;
 	zlist = NULL; // wir haben noch keine Zombies
 	wlist = NULL; // waiting_list f�r sp�ter
 	scheduler_tcb = malloc(sizeof(tcb)); // hole speicher f�r tcbblock
 	scheduler_tcb->Thread_ID = 42;  // main thread ID wird auf 42 gesetzt  weil wir das k�nnen
-	for(i = 0; i < MAX_TCB; i++){ // initialisierungen fuer unsere TCB_structs 
-		tcb_array[i] = malloc(sizeof(tcb));
-		tcb_array[i]->Thread_ID= i; // gleich ID zuweisung
-	}
+	
+	tcb_getcontext(scheduler_tcb);	
 	
 	ult_spawn(f); // hier wurde der erste Thread erzeugt, tcb_array[0] hat also Valide werrte
 	
 	printf("%p  der jmp_buff von scheduler\n", scheduler_tcb->env);
 
-	printf("before swap\n");
+	printf("before swap\n");fflush(stdout);
 	tcb_swapcontext(scheduler_tcb,tlist->tcb); // f�hre thread "my init" aus und starte den Sheduler
+	//------------------------------------------------------------------
+	printf("after swap\n");fflush(stdout);
+
 	/* make tlist a circular list */
-	tmp_tlist = tlist;
-	// go to last element in tlist
+
+
+//	tmp_tlist = tlist;
+/*	// go to last element in tlist
 	while(tmp_tlist->next != NULL){	
+		printf("%p\n",tlist->next);
 		tmp_tlist = tmp_tlist->next; // iterieren durch die qeue 
 	}
 	// next element of last element is first element
 	tmp_tlist->next = tlist;
-	//------------------------------------------------------------------
+*/	
+
+
+
 
 	/* tmp_tlist ain't needed anymore */
-	tmp_tlist = NULL;
+//	tmp_tlist = NULL;
 	tlist = tlist->next;
 	printf("erster Thread vom scheduler %d\n",tlist->tcb->Thread_ID);
+	
+	
+	/*
+	 * Scheduler
+	 */
+	
 	/* scheduling method: always run the next one */
 	while(tlist){
 		printf("\t\tswap context\n");
@@ -342,9 +343,10 @@ void ult_init(ult_func f) {
 		// Waiting-list bereinigen!
 		
 		//--------------------------------------------------------------
+		printf("\t\tbefore wait threads");
 		tmp_zlist = zlist;
 		tmp_wlist = wlist;
-		tmp_tlist = tlist;
+//		tmp_tlist = tlist;
 		while(wlist){
 			while(zlist){
 				if(wlist->tcb->Wait_ID == zlist->tcb->Thread_ID){
